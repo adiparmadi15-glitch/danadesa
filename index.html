@@ -9,59 +9,52 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-  body { background: #f0fdf4; min-height: 100vh; }
-  input, select, textarea, button { font-family: inherit; font-size: 13px; }
-  input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; outline: none; }
-  input:focus, select:focus, textarea:focus { border-color: #16a34a; box-shadow: 0 0 0 2px #bbf7d0; }
-  button { cursor: pointer; border-radius: 8px; border: none; padding: 8px 16px; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  th { font-size: 11px; font-weight: 600; color: #6b7280; padding: 8px 10px; border-bottom: 1px solid #e5e7eb; text-align: left; white-space: nowrap; background: #f9fafb; }
-  td { padding: 8px 10px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
-  .page { display: none; } .page.active { display: block; }
-  .card { background: white; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 10px; }
-  .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 10px; margin-bottom: 1rem; }
-  .metric { background: white; border-radius: 10px; padding: 12px 14px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-  .metric-label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
-  .metric-value { font-size: 17px; font-weight: 700; }
-  .sec-title { font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
-  .sec-box { background: #f9fafb; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
-  .read-box { padding: 8px 10px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 13px; font-weight: 600; color: #1d4ed8; }
-  .tab-bar { display: flex; gap: 8px; margin-bottom: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; flex-wrap: wrap; }
-  .tab-btn { font-size: 13px; padding: 6px 16px; border-radius: 20px; border: 1px solid #d1d5db; background: white; color: #6b7280; }
-  .tab-btn.active { border-color: #16a34a; background: #dcfce7; color: #166534; font-weight: 600; }
-  .btn-green { background: #16a34a; color: white; font-weight: 600; }
-  .btn-green:hover { background: #15803d; }
-  .btn-outline { background: white; border: 1px solid #d1d5db; color: #374151; }
-  .alert { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 1rem; }
-  .alert-ok { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
-  .alert-err { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
-  .modal-bg { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.45); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; overflow-y: auto; }
-  .modal { background: white; border-radius: 16px; padding: 1.5rem; width: 100%; max-width: 680px; max-height: 95vh; overflow-y: auto; }
-  .wrap { max-width: 1000px; margin: 0 auto; padding: 1rem; }
-  .bar-wrap { display: flex; align-items: center; gap: 6px; }
-  .bar-bg { flex: 1; height: 6px; background: #e5e7eb; border-radius: 3px; min-width: 40px; }
-  .bar-fill { height: 6px; border-radius: 3px; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; }
-  @media(max-width:600px){ .grid2,.grid3{grid-template-columns:1fr;} }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+body { background: #f0fdf4; min-height: 100vh; }
+input, select, textarea, button { font-family: inherit; font-size: 13px; }
+input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; outline: none; }
+input:focus, select:focus, textarea:focus { border-color: #16a34a; box-shadow: 0 0 0 2px #bbf7d0; }
+button { cursor: pointer; border-radius: 8px; border: none; padding: 8px 16px; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { font-size: 11px; font-weight: 600; color: #6b7280; padding: 8px 10px; border-bottom: 1px solid #e5e7eb; text-align: left; white-space: nowrap; background: #f9fafb; }
+td { padding: 8px 10px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+.card { background: white; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 10px; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 10px; margin-bottom: 1rem; }
+.metric { background: white; border-radius: 10px; padding: 12px 14px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.metric-label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+.metric-value { font-size: 17px; font-weight: 700; }
+.sec-title { font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+.sec-box { background: #f9fafb; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+.read-box { padding: 8px 10px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 13px; font-weight: 600; color: #1d4ed8; }
+.tab-bar { display: flex; gap: 8px; margin-bottom: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; flex-wrap: wrap; }
+.tab-btn { font-size: 13px; padding: 6px 16px; border-radius: 20px; border: 1px solid #d1d5db; background: white; color: #6b7280; }
+.tab-btn.active { border-color: #16a34a; background: #dcfce7; color: #166534; font-weight: 600; }
+.btn-green { background: #16a34a; color: white; font-weight: 600; }
+.btn-green:hover { background: #15803d; }
+.btn-outline { background: white; border: 1px solid #d1d5db; color: #374151; }
+.alert { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 1rem; }
+.alert-ok { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.alert-err { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.modal-bg { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.45); z-index: 1000; display: flex; align-items: flex-start; justify-content: center; padding: 1rem; overflow-y: auto; }
+.modal { background: white; border-radius: 16px; padding: 1.5rem; width: 100%; max-width: 680px; margin: auto; }
+.wrap { max-width: 1000px; margin: 0 auto; padding: 1rem; }
+.bar-wrap { display: flex; align-items: center; gap: 6px; }
+.bar-bg { flex: 1; height: 6px; background: #e5e7eb; border-radius: 3px; min-width: 40px; }
+.bar-fill { height: 6px; border-radius: 3px; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; }
+@media(max-width:600px){ .grid2,.grid3{grid-template-columns:1fr;} }
 </style>
 </head>
 <body>
-
-<!-- KONFIGURASI SUPABASE — GANTI DI SINI -->
 <script>
   const SUPABASE_URL = 'https://hyzysbjtrbmquvxzhyyq.supabase.co'
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5enlzYmp0cmJtcXV2eHpoeXlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MTY1NDEsImV4cCI6MjA5MzI5MjU0MX0.lUGfRlijr_DRZWjTm5h3SvZxnOQVfT_K3fO_GL2f1yg'
   const ADMIN_PASSWORD = 'admin2024'
 </script>
-
 <div id="root"></div>
-
 <script type="text/babel">
-const { useState, useEffect, useCallback } = React
-
-// ── Supabase client ──
+const { useState, useEffect } = React
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 // ── DATA MASTER ──
@@ -70,37 +63,33 @@ const PRIORITAS=[[1,"Stunting"],[2,"Ketahanan Pangan"],[3,"Pengentasan Kemiskina
 const KATEGORI=[[1,"Ketahanan Pangan"],[2,"Stunting"],[3,"Sarpras umum"],[4,"PEL (Pengembangan Ekonomi Lokal)"],[5,"BUMDES/BUMDESMA"],[6,"Non Sarpras Umum"],[7,"Pendataan SDGs"],[8,"BLT Desa"],[9,"3% DOP"]]
 const SIFAT=[[1,"Pembangunan"],[2,"Rehabilitasi"],[3,"Peningkatan"],[4,"Pemeliharaan"],[5,"Pengadaan"]]
 const CARA=[[1,"Swakelola"],[2,"Pihak Ketiga"],[3,"Kerjasama"]]
-const JENIS_MAP={"1_sarpras":[[1,"Jalan Usaha Tani"],[2,"Embung"],[3,"Sarpras Pendukung Embung"],[4,"Bendung Sederhana"],[5,"Bangunan Irigasi"],[6,"Saluran Irigasi"],[7,"Tempat Penjemuran Tanaman Pangan"],[8,"Lumbung Pangan"],[9,"PKTD Pertanian dan perkebunan"],[10,"PKTD Perdagangan Logistik dan Pangan"],[11,"PKTD Perikanan"],[12,"PKTD Peternakan"],[13,"PKTD Industri Pengelolahan dan Pergudangan"],[14,"PKTD Perhutanan"],[15,"Jembatan Roda 4"],[16,"Jembatan Roda 2"],[17,"Sumur"],[18,"Instalasi Pompa Hidram"],[19,"Perpipaan"],[20,"Sarpras Lainnya"]],"1_non_sarpras":[[21,"Bantuan pangan hewani"],[22,"Bantuan pangan ikan"],[23,"Bantuan pangan nabati"],[24,"Pelatihan Perikanan"],[25,"Pelatihan Pertanian/Perkebunan"],[26,"Pelatihan Peternakan"],[27,"Pelatihan Tata Boga"]],"2_sarpras":[[28,"Saluran Drainase"],[29,"Bangunan Air Bersih"],[30,"Instalasi Penjernihan Air"],[31,"Penampungan Air Hujan (PAH)"],[32,"MCK"],[33,"Jamban Keluarga"],[34,"Gedung Sekolah TK/PAUD"],[35,"Sarpras Pendukung TK/PAUD"],[36,"Polindes"],[37,"Sarpras Pendukung Polindes"],[38,"Posyandu"],[39,"Sarpras Pendukung Posyandu"],[40,"Bak/Tong Sampah"],[41,"Tempat Pengolahan Sampah"],[42,"Tempat Pembuangan Sampah"],[43,"Jembatan Roda 4"],[44,"Jembatan Roda 2"],[45,"Sumur"],[46,"Instalasi Pompa Hidram"],[47,"Perpipaan"],[48,"Sarpras Lainnya"]],"2_non_sarpras":[[49,"Diklat Kader Kesehatan"],[50,"Insentif KPM"],[51,"Insentif Kader Kesehatan"],[52,"Insentif Kader Posyandu"],[53,"Konseling gizi di Posyandu"],[54,"Operasional Rembuk Stunting"],[55,"Operasional Posyandu"],[56,"Pelayanan Posyandu"],[57,"Pemberian Makanan Tambahan"],[58,"Sosialisasi Pencegahan Perkawinan Anak"],[59,"Operasional eHDW"],[60,"Pelatihan Kesehatan/Stunting"],[61,"Rapat Evaluasi PPS"],[62,"Sosialisasi Kesehatan/PPS"],[63,"Diklat Guru PAUD/TPA"],[64,"Honor Guru PAUD/TPA"],[65,"Pelatihan E HDW"]],"3_sarpras":[[66,"Jalan Poros Desa"],[67,"Jalan Poros Dusun"],[68,"Jalan Lingkungan"],[69,"Jalan Setapak"],[70,"Jembatan Gantung"],[71,"Gorong-gorong"],[72,"Tembok Penahan Tanah"],[73,"Bronjong"],[74,"Krib Pengarah"],[75,"Tambatan Perahu"],[76,"Gedung Perpustakaan"],[77,"Sarpras Pendukung Perpustakaan"],[78,"Bangunan Olahraga"],[79,"Sarpras Pendukung Olahraga"],[80,"Taman bermain/RTH"],[81,"Pasar"],[82,"Sarpras Pendukung Pasar"],[83,"Bangunan Utama Wisata"],[84,"Sarpras Pendukung Pariwisata"],[85,"Gedung BUMDES"],[86,"Balai Kemasyarakatan"],[87,"Jaringan Internet"],[88,"Listrik Desa"],[89,"PJU/Bantuan Listrik RT"],[90,"Pangkalan Ojek"],[91,"Sumur Resapan/Biofori"],[92,"PKTD Restoran dan Wisata"],[93,"PKTD Prasarana Umum"],[94,"PKTD Lain lain"]],"4_non_sarpras":[[95,"Pelatihan Pengurus Bumdes"],[96,"Pembentukan Badan Usaha"],[97,"Diklat ekonomi"],[98,"Pelatihan Ekonomi/Wirausaha"],[99,"Penyertaan Modal Bumdes"]],"5_non_sarpras":[[95,"Pelatihan Pengurus Bumdes"],[96,"Pembentukan Badan Usaha"],[97,"Diklat ekonomi"],[98,"Pelatihan Ekonomi/Wirausaha"],[99,"Penyertaan Modal Bumdes"]],"6_sarpras":[[100,"Perbaikan Rumah Tinggal"]],"6_non_sarpras":[[101,"Bantuan untuk kaum Difabel"],[102,"Diklat Agama/Sosbudling"],[103,"Pelatihan Aparatur Desa"],[104,"Pelatihan Elektronika"],[105,"Pelatihan Industri kreatif"],[106,"Pelatihan Kelembagaan"],[107,"Pelatihan Komputer"],[108,"Pelatihan Otomotif"],[109,"Pelatihan Sosbud"],[110,"Pelatihan Tata Busana"],[111,"Pelatihan Tata Rias"],[112,"Pelatihan Teknologi Tepat Guna"],[113,"Pembinaan/Penyuluhan"],[114,"Penanganan Bencana Alam"],[115,"Penanganan Bencana Non Alam"],[116,"Pendataan/Pemetaan Potensi Desa"],[117,"Rehabilitasi Ketergantungan obat"],[118,"Penanggulangan TBC"],[119,"Lain lain"]],"7_non_sarpras":[[120,"Bimtek Pendataan SDGs"],[121,"Honor Admin"],[122,"Honor Enumerator"],[123,"Operasional Pemutakhiran Data"]],"8_non_sarpras":[[124,"BLT Desa"]],"9_non_sarpras":[[125,"Koordinasi Pemerintah Desa"],[126,"Kegiatan penanggulangan kerawanan sosial"],[127,"Kegiatan lainnya mendukung tugas Pemerintah Desa"]]}
+const JENIS_MAP={"1_sarpras":[[1,"Jalan Usaha Tani"],[2,"Embung"],[3,"Sarpras Pendukung Embung"],[4,"Bendung Sederhana"],[5,"Bangunan Irigasi"],[6,"Saluran Irigasi"],[7,"Tempat Penjemuran Tanaman Pangan"],[8,"Lumbung Pangan"],[9,"PKTD Pertanian dan perkebunan"],[10,"PKTD Perdagangan Logistik dan Pangan"],[11,"PKTD Perikanan"],[12,"PKTD Peternakan"],[13,"PKTD Industri Pengelolahan"],[14,"PKTD Perhutanan"],[15,"Jembatan Roda 4"],[16,"Jembatan Roda 2"],[17,"Sumur"],[18,"Instalasi Pompa Hidram"],[19,"Perpipaan"],[20,"Sarpras Lainnya"]],"1_non_sarpras":[[21,"Bantuan pangan hewani"],[22,"Bantuan pangan ikan"],[23,"Bantuan pangan nabati"],[24,"Pelatihan Perikanan"],[25,"Pelatihan Pertanian/Perkebunan"],[26,"Pelatihan Peternakan"],[27,"Pelatihan Tata Boga"]],"2_sarpras":[[28,"Saluran Drainase"],[29,"Bangunan Air Bersih"],[30,"Instalasi Penjernihan Air"],[31,"Penampungan Air Hujan (PAH)"],[32,"MCK"],[33,"Jamban Keluarga"],[34,"Gedung Sekolah TK/PAUD"],[35,"Sarpras Pendukung TK/PAUD"],[36,"Polindes"],[37,"Sarpras Pendukung Polindes"],[38,"Posyandu"],[39,"Sarpras Pendukung Posyandu"],[40,"Bak/Tong Sampah"],[41,"Tempat Pengolahan Sampah"],[42,"Tempat Pembuangan Sampah"],[43,"Jembatan Roda 4"],[44,"Jembatan Roda 2"],[45,"Sumur"],[46,"Instalasi Pompa Hidram"],[47,"Perpipaan"],[48,"Sarpras Lainnya"]],"2_non_sarpras":[[49,"Diklat Kader Kesehatan"],[50,"Insentif KPM"],[51,"Insentif Kader Kesehatan"],[52,"Insentif Kader Posyandu"],[53,"Konseling gizi di Posyandu"],[54,"Operasional Rembuk Stunting"],[55,"Operasional Posyandu"],[56,"Pelayanan Posyandu"],[57,"Pemberian Makanan Tambahan"],[58,"Sosialisasi Pencegahan Perkawinan Anak"],[59,"Operasional eHDW"],[60,"Pelatihan Kesehatan/Stunting"],[61,"Rapat Evaluasi PPS"],[62,"Sosialisasi Kesehatan/PPS"],[63,"Diklat Guru PAUD/TPA"],[64,"Honor Guru PAUD/TPA"],[65,"Pelatihan E HDW"]],"3_sarpras":[[66,"Jalan Poros Desa"],[67,"Jalan Poros Dusun"],[68,"Jalan Lingkungan"],[69,"Jalan Setapak"],[70,"Jembatan Gantung"],[71,"Gorong-gorong"],[72,"Tembok Penahan Tanah"],[73,"Bronjong"],[74,"Krib Pengarah"],[75,"Tambatan Perahu"],[76,"Gedung Perpustakaan"],[77,"Sarpras Pendukung Perpustakaan"],[78,"Bangunan Olahraga"],[79,"Sarpras Pendukung Olahraga"],[80,"Taman bermain/RTH"],[81,"Pasar"],[82,"Sarpras Pendukung Pasar"],[83,"Bangunan Utama Wisata"],[84,"Sarpras Pendukung Pariwisata"],[85,"Gedung BUMDES"],[86,"Balai Kemasyarakatan"],[87,"Jaringan Internet"],[88,"Listrik Desa"],[89,"PJU/Bantuan Listrik RT"],[90,"Pangkalan Ojek"],[91,"Sumur Resapan/Biofori"],[92,"PKTD Restoran dan Wisata"],[93,"PKTD Prasarana Umum"],[94,"PKTD Lain lain"]],"4_non_sarpras":[[95,"Pelatihan Pengurus Bumdes"],[96,"Pembentukan Badan Usaha"],[97,"Diklat ekonomi"],[98,"Pelatihan Ekonomi/Wirausaha"],[99,"Penyertaan Modal Bumdes"]],"5_non_sarpras":[[95,"Pelatihan Pengurus Bumdes"],[96,"Pembentukan Badan Usaha"],[97,"Diklat ekonomi"],[98,"Pelatihan Ekonomi/Wirausaha"],[99,"Penyertaan Modal Bumdes"]],"6_sarpras":[[100,"Perbaikan Rumah Tinggal"]],"6_non_sarpras":[[101,"Bantuan untuk kaum Difabel"],[102,"Diklat Agama/Sosbudling"],[103,"Pelatihan Aparatur Desa"],[104,"Pelatihan Elektronika"],[105,"Pelatihan Industri kreatif"],[106,"Pelatihan Kelembagaan"],[107,"Pelatihan Komputer"],[108,"Pelatihan Otomotif"],[109,"Pelatihan Sosbud"],[110,"Pelatihan Tata Busana"],[111,"Pelatihan Tata Rias"],[112,"Pelatihan Teknologi Tepat Guna"],[113,"Pembinaan/Penyuluhan"],[114,"Penanganan Bencana Alam"],[115,"Penanganan Bencana Non Alam"],[116,"Pendataan/Pemetaan Potensi Desa"],[117,"Rehabilitasi Ketergantungan obat"],[118,"Penanggulangan TBC"],[119,"Lain lain"]],"7_non_sarpras":[[120,"Bimtek Pendataan SDGs"],[121,"Honor Admin"],[122,"Honor Enumerator"],[123,"Operasional Pemutakhiran Data"]],"8_non_sarpras":[[124,"BLT Desa"]],"9_non_sarpras":[[125,"Koordinasi Pemerintah Desa"],[126,"Kegiatan penanggulangan kerawanan sosial"],[127,"Kegiatan lainnya mendukung tugas Pemerintah Desa"]]}
 const SATUAN_MAP={1:"meter",2:"m³",3:"unit",4:"meter",5:"unit",6:"meter",7:"m²",8:"m²",9:"m²",10:"unit",11:"m²",12:"m²",13:"m²",14:"m²",15:"meter",16:"meter",17:"unit",18:"unit",19:"meter",20:"unit",21:"Paket",22:"Paket",23:"Paket",24:"OK",25:"OK",26:"OK",27:"OK",28:"meter",29:"unit",30:"unit",31:"unit",32:"m²",33:"unit",34:"m²",35:"unit",36:"m²",37:"unit",38:"m²",39:"unit",40:"m²",41:"unit",42:"m²",43:"meter",44:"meter",45:"unit",46:"unit",47:"meter",48:"unit",49:"OK",50:"OB",51:"OB",52:"OB",53:"Kali",54:"Kali",55:"Bulan",56:"Kali",57:"OK",58:"Kali",59:"OB",60:"OK",61:"Kali",62:"Kali",63:"OK",64:"OB",65:"OK",66:"meter",67:"meter",68:"meter",69:"meter",70:"meter",71:"meter",72:"meter",73:"meter",74:"meter",75:"meter",76:"m³",77:"unit",78:"m²",79:"unit",80:"m²",81:"m²",82:"unit",83:"m²",84:"unit",85:"m²",86:"m²",87:"unit",88:"unit",89:"unit",90:"unit",91:"unit",92:"m²",93:"unit",94:"OK",95:"Paket",96:"OK",97:"OK",98:"Unit",99:"Unit",100:"Paket",101:"OK",102:"OK",103:"OK",104:"OK",105:"OK",106:"OK",107:"OK",108:"OK",109:"OK",110:"OK",111:"OK",112:"OK",113:"OK",114:"OK",115:"OK",116:"OK",117:"OK",118:"Kali",119:"Paket",120:"Paket",121:"Paket",122:"Paket",123:"OK",124:"KPM/Bulan",125:"Paket",126:"Paket",127:"Paket"}
 
-// ── HELPERS ──
 const fmtS = n => n>=1e9?`Rp ${(n/1e9).toFixed(1)} M`:n>=1e6?`Rp ${Math.round(n/1e6)} Jt`:`Rp ${Math.round(n||0).toLocaleString('id-ID')}`
 const calcPct = (a,b) => b>0?Math.round((a/b)*100):0
 const pctColor = p => p>=80?'#166534':p>=50?'#92400e':'#991b1b'
 const emptyKeg = () => ({sumber_dana:'DDS',kode_induk:'',kode_rekening:'',uraian_apbdes:'',uraian_detail:'',sdgs:'',prioritas:'',kategori:'',jenis_kegiatan_utama:'',jenis_kegiatan:'',sifat:'',cara:'',anggaran_apbdes:0,rencana_dd:0,rencana_swadaya:0,rencana_jumlah:0,rencana_satuan:'',rencana_volume:0,realisasi_dd:0,realisasi_swadaya:0,realisasi_jumlah:0,realisasi_volume:0,realisasi_keterangan:''})
 
-// ── ALERT ──
 function Alert({ok,text}) {
   if (!text) return null
   return <div className={`alert ${ok?'alert-ok':'alert-err'}`}>{ok?'✅':'⚠️'} {text}</div>
 }
 
-// ── BAR ──
 function Bar({p}) {
-  const c = pctColor(p)
   return (
     <div className="bar-wrap">
-      <div className="bar-bg"><div className="bar-fill" style={{width:Math.min(p,100)+'%',background:c}}/></div>
-      <span style={{fontSize:11,minWidth:28,color:c,fontWeight:600}}>{p}%</span>
+      <div className="bar-bg"><div className="bar-fill" style={{width:Math.min(p,100)+'%',background:pctColor(p)}}/></div>
+      <span style={{fontSize:11,minWidth:28,color:pctColor(p),fontWeight:600}}>{p}%</span>
     </div>
   )
 }
 
-// ── LOGIN PAGE ──
+// ── HALAMAN LOGIN UTAMA ──
 function LoginPage({onLogin}) {
-  const [mode,setMode] = useState('desa')
-  const [kode,setKode] = useState('')
-  const [pass,setPass] = useState('')
+  const [mode,setMode] = useState('pendamping')
+  const [username,setUsername] = useState('')
+  const [password,setPassword] = useState('')
   const [err,setErr] = useState('')
   const [loading,setLoading] = useState(false)
 
@@ -108,13 +97,14 @@ function LoginPage({onLogin}) {
     setErr(''); setLoading(true)
     try {
       if (mode==='admin') {
-        if (pass===ADMIN_PASSWORD) onLogin('admin',null,null)
+        if (password===ADMIN_PASSWORD) onLogin('admin',null,null,null)
         else setErr('Password admin salah')
       } else {
-        if (!kode||kode.length!==10) { setErr('Kode desa harus 10 digit'); setLoading(false); return }
-        const {data,error} = await sb.from('desa').select('*').eq('kode_desa',kode).single()
-        if (error||!data) setErr('Kode desa tidak ditemukan')
-        else onLogin('desa',data.id,data.nama)
+        if (!username||username.length!==16) { setErr('Username harus 16 digit angka'); setLoading(false); return }
+        if (!password) { setErr('Password wajib diisi'); setLoading(false); return }
+        const {data,error} = await sb.from('pendamping').select('*').eq('username',username).eq('password',password).single()
+        if (error||!data) setErr('Username atau password salah')
+        else onLogin('pendamping',data.id,data.nama,null)
       }
     } catch(e) { setErr('Terjadi kesalahan, coba lagi') }
     setLoading(false)
@@ -129,29 +119,34 @@ function LoginPage({onLogin}) {
           <p style={{fontSize:13,color:'#6b7280',marginTop:4}}>Transparansi penggunaan anggaran desa</p>
         </div>
         <div style={{display:'flex',background:'#f3f4f6',borderRadius:10,padding:4,marginBottom:'1.5rem'}}>
-          {['desa','admin'].map((m,i)=>(
+          {[['pendamping','👤 Login Pendamping'],['admin','⚙️ Admin']].map(([m,l])=>(
             <button key={m} onClick={()=>{setMode(m);setErr('')}}
-              style={{flex:1,padding:8,fontSize:13,border:'none',borderRadius:8,background:mode===m?'white':'transparent',color:mode===m?'#166534':'#6b7280',fontWeight:mode===m?600:400,boxShadow:mode===m?'0 1px 4px rgba(0,0,0,0.1)':'none'}}>
-              {i===0?'🏘 Login Desa':'⚙️ Admin'}
+              style={{flex:1,padding:8,fontSize:12,border:'none',borderRadius:8,background:mode===m?'white':'transparent',color:mode===m?'#166534':'#6b7280',fontWeight:mode===m?600:400,boxShadow:mode===m?'0 1px 4px rgba(0,0,0,0.1)':'none'}}>
+              {l}
             </button>
           ))}
         </div>
-        {mode==='desa'
-          ? <div style={{marginBottom:12}}>
-              <label style={{fontSize:13,color:'#374151',fontWeight:500,display:'block',marginBottom:6}}>Kode Desa (10 digit angka)</label>
-              <input type="text" inputMode="numeric" maxLength={10} value={kode} onChange={e=>setKode(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()} placeholder="Masukkan kode desa" style={{fontSize:18,letterSpacing:4,textAlign:'center'}}/>
-            </div>
-          : <div style={{marginBottom:12}}>
-              <label style={{fontSize:13,color:'#374151',fontWeight:500,display:'block',marginBottom:6}}>Password Admin</label>
-              <input type="password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()} placeholder="Password admin"/>
-            </div>
-        }
-        {err && <div className="alert alert-err">{err}</div>}
+        {mode==='pendamping' ? (<>
+          <div style={{marginBottom:10}}>
+            <label style={{fontSize:13,color:'#374151',fontWeight:500,display:'block',marginBottom:6}}>Username (16 digit angka)</label>
+            <input type="text" inputMode="numeric" maxLength={16} value={username} onChange={e=>setUsername(e.target.value.replace(/\D/g,''))} placeholder="Masukkan username 16 digit" style={{letterSpacing:2}}/>
+          </div>
+          <div style={{marginBottom:12}}>
+            <label style={{fontSize:13,color:'#374151',fontWeight:500,display:'block',marginBottom:6}}>Password</label>
+            <input type="password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()} placeholder="Masukkan password"/>
+          </div>
+        </>) : (
+          <div style={{marginBottom:12}}>
+            <label style={{fontSize:13,color:'#374151',fontWeight:500,display:'block',marginBottom:6}}>Password Admin</label>
+            <input type="password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()} placeholder="Password admin"/>
+          </div>
+        )}
+        {err && <div className="alert alert-err">⚠️ {err}</div>}
         <button onClick={login} disabled={loading} className="btn-green" style={{width:'100%',padding:12,fontSize:15,opacity:loading?0.7:1}}>
           {loading?'Memproses...':'Masuk'}
         </button>
         <div style={{textAlign:'center',marginTop:12}}>
-          <button onClick={()=>onLogin('publik',null,null)} style={{fontSize:13,border:'none',background:'none',color:'#2563eb',textDecoration:'underline'}}>
+          <button onClick={()=>onLogin('publik',null,null,null)} style={{fontSize:13,border:'none',background:'none',color:'#2563eb',textDecoration:'underline'}}>
             📊 Lihat dashboard publik
           </button>
         </div>
@@ -160,85 +155,161 @@ function LoginPage({onLogin}) {
   )
 }
 
-// ── ADMIN PAGE ──
-function AdminPage({onLogout}) {
-  const [tab,setTab] = useState('kelola')
-  const [desas,setDesas] = useState([])
-  const [loading,setLoading] = useState(true)
-  const [msg,setMsg] = useState(null)
-  const [editData,setEditData] = useState(null)
-  const [nama,setNama]=useState(''); const [kode,setKode]=useState('')
-  const [kec,setKec]=useState(''); const [kab,setKab]=useState(''); const [ang,setAng]=useState('')
+// ── HALAMAN PILIH DESA (setelah login pendamping) ──
+function PilihDesaPage({pendampingNama, onPilihDesa, onLogout}) {
+  const [kode,setKode] = useState('')
+  const [err,setErr] = useState('')
+  const [loading,setLoading] = useState(false)
 
-  useEffect(()=>{ loadDesa() },[])
-
-  const loadDesa = async () => {
-    setLoading(true)
-    const {data} = await sb.from('desa').select('*').order('nama')
-    setDesas(data||[])
+  const masuk = async () => {
+    setErr(''); setLoading(true)
+    if (!kode||kode.length!==10) { setErr('Kode desa harus 10 digit'); setLoading(false); return }
+    const {data,error} = await sb.from('desa').select('*').eq('kode_desa',kode).single()
+    if (error||!data) setErr('Kode desa tidak ditemukan')
+    else onPilihDesa(data.id, data.nama)
     setLoading(false)
   }
 
-  const showMsg = (ok,t) => { setMsg({ok,t}); setTimeout(()=>setMsg(null),3000) }
+  return (
+    <div style={{minHeight:'100vh',background:'#f0fdf4',display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}}>
+      <div className="card" style={{width:'100%',maxWidth:400}}>
+        <div style={{textAlign:'center',marginBottom:'1.5rem'}}>
+          <div style={{fontSize:36,marginBottom:8}}>🏘</div>
+          <h2 style={{fontSize:18,fontWeight:700,color:'#166534'}}>Pilih Desa</h2>
+          <p style={{fontSize:13,color:'#6b7280',marginTop:4}}>Halo, <b>{pendampingNama||'Pendamping'}</b>! Masukkan kode desa yang akan diinput.</p>
+        </div>
+        <div style={{marginBottom:12}}>
+          <label style={{fontSize:13,color:'#374151',fontWeight:500,display:'block',marginBottom:6}}>Kode Desa (10 digit angka)</label>
+          <input type="text" inputMode="numeric" maxLength={10} value={kode} onChange={e=>setKode(e.target.value.replace(/\D/g,''))} onKeyDown={e=>e.key==='Enter'&&masuk()} placeholder="Masukkan kode desa" style={{fontSize:18,letterSpacing:4,textAlign:'center'}}/>
+        </div>
+        {err && <div className="alert alert-err">⚠️ {err}</div>}
+        <button onClick={masuk} disabled={loading} className="btn-green" style={{width:'100%',padding:12,fontSize:15,opacity:loading?0.7:1,marginBottom:10}}>
+          {loading?'Mencari...':'Masuk ke Desa'}
+        </button>
+        <button onClick={onLogout} className="btn-outline" style={{width:'100%',padding:10,fontSize:13}}>
+          ← Kembali ke Login
+        </button>
+      </div>
+    </div>
+  )
+}
 
-  const tambah = async () => {
-    if (!nama.trim()) { showMsg(false,'Isi nama desa'); return }
-    if (!/^\d{10}$/.test(kode)) { showMsg(false,'Kode desa harus 10 digit angka'); return }
-    if (desas.find(d=>d.kode_desa===kode)) { showMsg(false,'Kode desa sudah dipakai'); return }
-    const {error} = await sb.from('desa').insert([{nama,kode_desa:kode,kecamatan:kec,kabupaten:kab,anggaran:Number(ang)||0}])
-    if (error) { showMsg(false,error.message); return }
-    showMsg(true,`Desa "${nama}" berhasil ditambahkan`)
-    setNama(''); setKode(''); setKec(''); setKab(''); setAng('')
-    loadDesa()
+// ── ADMIN PAGE ──
+function AdminPage({onLogout}) {
+  const [tab,setTab] = useState('desa')
+  const [desas,setDesas] = useState([])
+  const [pendampings,setPendampings] = useState([])
+  const [loading,setLoading] = useState(true)
+  const [msg,setMsg] = useState(null)
+  const [editDesa,setEditDesa] = useState(null)
+  const [editPend,setEditPend] = useState(null)
+
+  // Form desa
+  const [dNama,setDNama]=useState(''); const [dKode,setDKode]=useState('')
+  const [dKec,setDKec]=useState(''); const [dKab,setDKab]=useState(''); const [dAng,setDAng]=useState('')
+
+  // Form pendamping
+  const [pNama,setPNama]=useState(''); const [pUser,setPUser]=useState('')
+  const [pPass,setPPass]=useState('')
+
+  useEffect(()=>{ loadAll() },[])
+
+  const loadAll = async () => {
+    setLoading(true)
+    const [{data:d},{data:p}] = await Promise.all([
+      sb.from('desa').select('*').order('nama'),
+      sb.from('pendamping').select('*').order('nama')
+    ])
+    setDesas(d||[]); setPendampings(p||[])
+    setLoading(false)
   }
 
-  const hapus = async (id,nmDesa) => {
-    if (!confirm(`Hapus desa ${nmDesa}?`)) return
+  const showMsg = (ok,t) => { setMsg({ok,t}); setTimeout(()=>setMsg(null),4000) }
+
+  // DESA CRUD
+  const tambahDesa = async () => {
+    if (!dNama.trim()) { showMsg(false,'Isi nama desa'); return }
+    if (!/^\d{10}$/.test(dKode)) { showMsg(false,'Kode desa harus 10 digit angka'); return }
+    if (desas.find(d=>d.kode_desa===dKode)) { showMsg(false,'Kode desa sudah dipakai'); return }
+    const {error} = await sb.from('desa').insert([{nama:dNama,kode_desa:dKode,kecamatan:dKec,kabupaten:dKab,anggaran:Number(dAng)||0}])
+    if (error) { showMsg(false,error.message); return }
+    showMsg(true,`Desa "${dNama}" berhasil ditambahkan`)
+    setDNama(''); setDKode(''); setDKec(''); setDKab(''); setDAng('')
+    loadAll()
+  }
+
+  const hapusDesa = async (id,nama) => {
+    if (!confirm(`Hapus desa ${nama}?`)) return
     const {error} = await sb.from('desa').delete().eq('id',id)
     if (error) showMsg(false,error.message)
-    else { showMsg(true,'Desa berhasil dihapus'); loadDesa() }
+    else { showMsg(true,'Desa berhasil dihapus'); loadAll() }
   }
 
-  const simpanEdit = async () => {
-    const {error} = await sb.from('desa').update({nama:editData.nama,kode_desa:editData.kode_desa,kecamatan:editData.kecamatan,kabupaten:editData.kabupaten,anggaran:editData.anggaran}).eq('id',editData.id)
+  const simpanEditDesa = async () => {
+    const {error} = await sb.from('desa').update({nama:editDesa.nama,kode_desa:editDesa.kode_desa,kecamatan:editDesa.kecamatan,kabupaten:editDesa.kabupaten,anggaran:editDesa.anggaran}).eq('id',editDesa.id)
     if (error) showMsg(false,error.message)
-    else { showMsg(true,'Data desa berhasil diupdate'); setEditData(null); loadDesa() }
+    else { showMsg(true,'Data desa diupdate'); setEditDesa(null); loadAll() }
   }
 
-  const totA = desas.reduce((s,d)=>s+(d.anggaran||0),0)
+  // PENDAMPING CRUD
+  const tambahPendamping = async () => {
+    if (!pNama.trim()) { showMsg(false,'Isi nama pendamping'); return }
+    if (!/^\d{16}$/.test(pUser)) { showMsg(false,'Username harus 16 digit angka'); return }
+    if (!pPass||pPass.length<4) { showMsg(false,'Password minimal 4 karakter'); return }
+    if (pendampings.find(p=>p.username===pUser)) { showMsg(false,'Username sudah dipakai'); return }
+    const {error} = await sb.from('pendamping').insert([{nama:pNama,username:pUser,password:pPass}])
+    if (error) { showMsg(false,error.message); return }
+    showMsg(true,`Pendamping "${pNama}" berhasil ditambahkan`)
+    setPNama(''); setPUser(''); setPPass('')
+    loadAll()
+  }
+
+  const hapusPendamping = async (id,nama) => {
+    if (!confirm(`Hapus pendamping ${nama}?`)) return
+    const {error} = await sb.from('pendamping').delete().eq('id',id)
+    if (error) showMsg(false,error.message)
+    else { showMsg(true,'Pendamping berhasil dihapus'); loadAll() }
+  }
+
+  const simpanEditPend = async () => {
+    const {error} = await sb.from('pendamping').update({nama:editPend.nama,username:editPend.username,password:editPend.password}).eq('id',editPend.id)
+    if (error) showMsg(false,error.message)
+    else { showMsg(true,'Data pendamping diupdate'); setEditPend(null); loadAll() }
+  }
 
   return (
     <div style={{minHeight:'100vh',background:'#f0fdf4'}}>
       <div className="wrap">
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem',flexWrap:'wrap',gap:8,paddingTop:'1rem'}}>
-          <div><h1 style={{fontSize:18,fontWeight:700,color:'#166534',margin:0}}>⚙️ Panel Admin</h1><p style={{fontSize:12,color:'#6b7280',margin:0}}>{desas.length} desa terdaftar</p></div>
+          <div><h1 style={{fontSize:18,fontWeight:700,color:'#166534',margin:0}}>⚙️ Panel Admin</h1>
+          <p style={{fontSize:12,color:'#6b7280',margin:0}}>{desas.length} desa · {pendampings.length} pendamping</p></div>
           <button onClick={onLogout} className="btn-outline" style={{fontSize:13}}>Keluar</button>
         </div>
 
         <div className="tab-bar">
-          {['kelola','rekap'].map((t,i)=>(
-            <button key={t} onClick={()=>setTab(t)} className={`tab-btn${tab===t?' active':''}`}>{i===0?'Kelola Desa':'Rekap Semua Desa'}</button>
+          {[['desa','🏘 Kelola Desa'],['pendamping','👤 Kelola Pendamping'],['rekap','📊 Rekap']].map(([t,l])=>(
+            <button key={t} onClick={()=>setTab(t)} className={`tab-btn${tab===t?' active':''}`}>{l}</button>
           ))}
         </div>
 
         {msg && <Alert ok={msg.ok} text={msg.t}/>}
 
-        {tab==='kelola' && <>
+        {/* TAB DESA */}
+        {tab==='desa' && <>
           <div className="card">
             <div className="sec-title">Tambah Desa Baru</div>
             <div className="grid2" style={{marginBottom:10}}>
-              {[['Nama Desa',nama,setNama,'Nama desa'],['Kode Desa (10 digit)',kode,v=>setKode(v.replace(/\D/g,'')),'1234567890'],['Kecamatan',kec,setKec,'Kecamatan'],['Kabupaten/Kota',kab,setKab,'Kabupaten/Kota']].map(([l,v,fn,ph])=>(
+              {[['Nama Desa',dNama,setDNama,'Nama desa'],['Kode Desa (10 digit)',dKode,v=>setDKode(v.replace(/\D/g,'')),'1234567890'],['Kecamatan',dKec,setDKec,'Kecamatan'],['Kabupaten/Kota',dKab,setDKab,'Kabupaten/Kota']].map(([l,v,fn,ph])=>(
                 <div key={l}><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>{l}</label><input value={v} onChange={e=>fn(e.target.value)} placeholder={ph}/></div>
               ))}
-              <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Total Anggaran (Rp)</label><input type="number" value={ang} onChange={e=>setAng(e.target.value)} placeholder="1200000000"/></div>
+              <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Total Anggaran (Rp)</label><input type="number" value={dAng} onChange={e=>setDAng(e.target.value)} placeholder="1200000000"/></div>
             </div>
-            <button onClick={tambah} className="btn-green" style={{padding:'9px 20px'}}>+ Tambah Desa</button>
+            <button onClick={tambahDesa} className="btn-green" style={{padding:'9px 20px'}}>+ Tambah Desa</button>
           </div>
-
           <div className="card">
             <div className="sec-title">Daftar Desa ({desas.length})</div>
-            {loading ? <div style={{textAlign:'center',padding:'2rem',color:'#6b7280'}}>Memuat...</div> :
-             desas.length===0 ? <div style={{textAlign:'center',padding:'2rem',color:'#9ca3af'}}>Belum ada desa terdaftar</div> :
+            {loading?<div style={{textAlign:'center',padding:'2rem',color:'#6b7280'}}>Memuat...</div>:
+             desas.length===0?<div style={{textAlign:'center',padding:'2rem',color:'#9ca3af'}}>Belum ada desa</div>:
             <div style={{overflowX:'auto'}}>
               <table>
                 <thead><tr><th>Nama Desa</th><th>Kode</th><th>Kecamatan</th><th>Kabupaten</th><th>Anggaran</th><th>Aksi</th></tr></thead>
@@ -249,12 +320,10 @@ function AdminPage({onLogout}) {
                     <td style={{color:'#6b7280'}}>{d.kecamatan||'-'}</td>
                     <td style={{color:'#6b7280'}}>{d.kabupaten||'-'}</td>
                     <td>{fmtS(d.anggaran||0)}</td>
-                    <td>
-                      <div style={{display:'flex',gap:6}}>
-                        <button onClick={()=>setEditData({...d})} style={{fontSize:11,padding:'4px 10px',border:'1px solid #3b82f6',color:'#3b82f6',background:'white',borderRadius:6}}>✏️ Edit</button>
-                        <button onClick={()=>hapus(d.id,d.nama)} style={{fontSize:11,padding:'4px 10px',border:'1px solid #ef4444',color:'#ef4444',background:'white',borderRadius:6}}>🗑 Hapus</button>
-                      </div>
-                    </td>
+                    <td><div style={{display:'flex',gap:6}}>
+                      <button onClick={()=>setEditDesa({...d})} style={{fontSize:11,padding:'4px 10px',border:'1px solid #3b82f6',color:'#3b82f6',background:'white',borderRadius:6}}>✏️ Edit</button>
+                      <button onClick={()=>hapusDesa(d.id,d.nama)} style={{fontSize:11,padding:'4px 10px',border:'1px solid #ef4444',color:'#ef4444',background:'white',borderRadius:6}}>🗑 Hapus</button>
+                    </div></td>
                   </tr>
                 ))}</tbody>
               </table>
@@ -262,13 +331,49 @@ function AdminPage({onLogout}) {
           </div>
         </>}
 
+        {/* TAB PENDAMPING */}
+        {tab==='pendamping' && <>
+          <div className="card">
+            <div className="sec-title">Tambah Akun Pendamping</div>
+            <div className="grid2" style={{marginBottom:10}}>
+              <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Nama Pendamping</label><input value={pNama} onChange={e=>setPNama(e.target.value)} placeholder="Nama lengkap"/></div>
+              <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Username (16 digit angka)</label><input value={pUser} onChange={e=>setPUser(e.target.value.replace(/\D/g,''))} maxLength={16} placeholder="1234567890123456" style={{letterSpacing:1}}/></div>
+              <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Password</label><input value={pPass} onChange={e=>setPPass(e.target.value)} placeholder="Min. 4 karakter"/></div>
+            </div>
+            <button onClick={tambahPendamping} className="btn-green" style={{padding:'9px 20px'}}>+ Tambah Pendamping</button>
+          </div>
+          <div className="card">
+            <div className="sec-title">Daftar Pendamping ({pendampings.length})</div>
+            {loading?<div style={{textAlign:'center',padding:'2rem',color:'#6b7280'}}>Memuat...</div>:
+             pendampings.length===0?<div style={{textAlign:'center',padding:'2rem',color:'#9ca3af'}}>Belum ada pendamping</div>:
+            <div style={{overflowX:'auto'}}>
+              <table>
+                <thead><tr><th>Nama</th><th>Username</th><th>Password</th><th>Aksi</th></tr></thead>
+                <tbody>{pendampings.map(p=>(
+                  <tr key={p.id}>
+                    <td style={{fontWeight:600}}>{p.nama}</td>
+                    <td><code style={{fontSize:12,letterSpacing:1,background:'#f3f4f6',padding:'2px 6px',borderRadius:4}}>{p.username}</code></td>
+                    <td><span style={{background:'#fef3c7',color:'#92400e',padding:'2px 8px',borderRadius:6,fontSize:12}}>{p.password}</span></td>
+                    <td><div style={{display:'flex',gap:6}}>
+                      <button onClick={()=>setEditPend({...p})} style={{fontSize:11,padding:'4px 10px',border:'1px solid #3b82f6',color:'#3b82f6',background:'white',borderRadius:6}}>✏️ Edit</button>
+                      <button onClick={()=>hapusPendamping(p.id,p.nama)} style={{fontSize:11,padding:'4px 10px',border:'1px solid #ef4444',color:'#ef4444',background:'white',borderRadius:6}}>🗑 Hapus</button>
+                    </div></td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>}
+          </div>
+        </>}
+
+        {/* TAB REKAP */}
         {tab==='rekap' && <>
           <div className="grid3">
-            {[['Total Desa',desas.length,'#166534'],['Total Anggaran',fmtS(totA),'#166534'],['Desa Aktif',desas.length,'#1d4ed8']].map(([l,v,c])=>(
+            {[['Total Desa',desas.length,'#166534'],['Total Pendamping',pendampings.length,'#1d4ed8'],['Total Anggaran',fmtS(desas.reduce((s,d)=>s+(d.anggaran||0),0)),'#166534']].map(([l,v,c])=>(
               <div key={l} className="metric"><div className="metric-label">{l}</div><div className="metric-value" style={{color:c}}>{v}</div></div>
             ))}
           </div>
           <div className="card">
+            <div className="sec-title">Daftar Semua Desa</div>
             <div style={{overflowX:'auto'}}>
               <table>
                 <thead><tr><th>Desa</th><th>Kecamatan</th><th>Kabupaten</th><th>Anggaran</th></tr></thead>
@@ -280,23 +385,44 @@ function AdminPage({onLogout}) {
           </div>
         </>}
 
-        {/* Modal Edit */}
-        {editData && (
+        {/* Modal Edit Desa */}
+        {editDesa && (
           <div className="modal-bg">
             <div className="modal" style={{maxWidth:480}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem'}}>
                 <div style={{fontSize:15,fontWeight:700}}>✏️ Edit Desa</div>
-                <button onClick={()=>setEditData(null)} style={{border:'none',background:'none',fontSize:20}}>✕</button>
+                <button onClick={()=>setEditDesa(null)} style={{border:'none',background:'none',fontSize:20}}>✕</button>
               </div>
               <div className="grid2" style={{marginBottom:12}}>
                 {[['Nama Desa','nama'],['Kode Desa','kode_desa'],['Kecamatan','kecamatan'],['Kabupaten','kabupaten']].map(([l,k])=>(
-                  <div key={k}><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>{l}</label><input value={editData[k]||''} onChange={e=>setEditData({...editData,[k]:e.target.value})}/></div>
+                  <div key={k}><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>{l}</label><input value={editDesa[k]||''} onChange={e=>setEditDesa({...editDesa,[k]:e.target.value})}/></div>
                 ))}
-                <div style={{gridColumn:'1/-1'}}><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Total Anggaran (Rp)</label><input type="number" value={editData.anggaran||0} onChange={e=>setEditData({...editData,anggaran:Number(e.target.value)})}/></div>
+                <div style={{gridColumn:'1/-1'}}><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Total Anggaran (Rp)</label><input type="number" value={editDesa.anggaran||0} onChange={e=>setEditDesa({...editDesa,anggaran:Number(e.target.value)})}/></div>
               </div>
               <div style={{display:'flex',gap:8}}>
-                <button onClick={simpanEdit} className="btn-green" style={{flex:1,padding:10,fontSize:14}}>💾 Simpan</button>
-                <button onClick={()=>setEditData(null)} className="btn-outline" style={{padding:'10px 20px',fontSize:14}}>Batal</button>
+                <button onClick={simpanEditDesa} className="btn-green" style={{flex:1,padding:10,fontSize:14}}>💾 Simpan</button>
+                <button onClick={()=>setEditDesa(null)} className="btn-outline" style={{padding:'10px 20px',fontSize:14}}>Batal</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Edit Pendamping */}
+        {editPend && (
+          <div className="modal-bg">
+            <div className="modal" style={{maxWidth:440}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem'}}>
+                <div style={{fontSize:15,fontWeight:700}}>✏️ Edit Pendamping</div>
+                <button onClick={()=>setEditPend(null)} style={{border:'none',background:'none',fontSize:20}}>✕</button>
+              </div>
+              <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:12}}>
+                {[['Nama Pendamping','nama'],['Username (16 digit)','username'],['Password','password']].map(([l,k])=>(
+                  <div key={k}><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>{l}</label><input value={editPend[k]||''} onChange={e=>setEditPend({...editPend,[k]:e.target.value})}/></div>
+                ))}
+              </div>
+              <div style={{display:'flex',gap:8}}>
+                <button onClick={simpanEditPend} className="btn-green" style={{flex:1,padding:10,fontSize:14}}>💾 Simpan</button>
+                <button onClick={()=>setEditPend(null)} className="btn-outline" style={{padding:'10px 20px',fontSize:14}}>Batal</button>
               </div>
             </div>
           </div>
@@ -308,17 +434,16 @@ function AdminPage({onLogout}) {
 
 // ── FORM KEGIATAN ──
 function FormKegiatan({initial,desaId,onSave,onClose}) {
-  const [f,setF] = useState(initial ? {...emptyKeg(),...initial} : emptyKeg())
+  const [f,setF] = useState(initial?{...emptyKeg(),...initial}:emptyKeg())
   const [err,setErr] = useState('')
   const [saving,setSaving] = useState(false)
-
   const s = (k,v) => setF(p=>({...p,[k]:v}))
-  const totR  = (f.rencana_dd||0)+(f.rencana_swadaya||0)
-  const totRl = (f.realisasi_dd||0)+(f.realisasi_swadaya||0)
-  const pctAng = calcPct(f.realisasi_dd,f.rencana_dd)
-  const pctFis = f.rencana_volume>0?calcPct(f.realisasi_volume,f.rencana_volume):0
-  const jenisList = f.kategori&&f.jenis_kegiatan_utama ? (JENIS_MAP[`${f.kategori}_${f.jenis_kegiatan_utama}`]||[]) : []
-  const satuan = f.jenis_kegiatan ? (SATUAN_MAP[Number(f.jenis_kegiatan)]||'') : ''
+  const totR=(f.rencana_dd||0)+(f.rencana_swadaya||0)
+  const totRl=(f.realisasi_dd||0)+(f.realisasi_swadaya||0)
+  const pctAng=calcPct(f.realisasi_dd,f.rencana_dd)
+  const pctFis=f.rencana_volume>0?calcPct(f.realisasi_volume,f.rencana_volume):0
+  const jenisList=f.kategori&&f.jenis_kegiatan_utama?(JENIS_MAP[`${f.kategori}_${f.jenis_kegiatan_utama}`]||[]):[]
+  const satuan=f.jenis_kegiatan?(SATUAN_MAP[Number(f.jenis_kegiatan)]||''):''
 
   const simpan = async () => {
     const missing=[]
@@ -337,28 +462,21 @@ function FormKegiatan({initial,desaId,onSave,onClose}) {
     if(!f.rencana_volume) missing.push('Volume Kegiatan')
     if(missing.length>0){setErr('Wajib diisi: '+missing.join(', '));return}
     setSaving(true)
-    const payload = {...f,desa_id:desaId,rencana_satuan:satuan}
+    const payload={...f,desa_id:desaId,rencana_satuan:satuan}
     let error
-    if (f.id) {
-      const res = await sb.from('kegiatan').update(payload).eq('id',f.id)
-      error = res.error
-    } else {
-      const res = await sb.from('kegiatan').insert([payload])
-      error = res.error
-    }
-    if (error) { setErr(error.message); setSaving(false); return }
-    onSave()
-    setSaving(false)
+    if(f.id){({error}=await sb.from('kegiatan').update(payload).eq('id',f.id))}
+    else{({error}=await sb.from('kegiatan').insert([payload]))}
+    if(error){setErr(error.message);setSaving(false);return}
+    onSave(); setSaving(false)
   }
 
-  const fld = (label,key,type='text',req=false) => (
+  const fld=(label,key,type='text',req=false)=>(
     <div>
       <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>{label}{req&&<span style={{color:'red'}}>*</span>}</label>
       <input type={type} value={f[key]||''} onChange={e=>s(key,type==='number'?Number(e.target.value)||0:e.target.value)}/>
     </div>
   )
-
-  const sel = (label,key,opts,req=false,onChange) => (
+  const sel=(label,key,opts,req=false,onChange)=>(
     <div>
       <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>{label}{req&&<span style={{color:'red'}}>*</span>}</label>
       <select value={f[key]||''} onChange={e=>{s(key,e.target.value);onChange&&onChange(e.target.value)}}>
@@ -367,8 +485,7 @@ function FormKegiatan({initial,desaId,onSave,onClose}) {
       </select>
     </div>
   )
-
-  const rbox = (label,val,color='#1d4ed8') => (
+  const rbox=(label,val,color='#1d4ed8')=>(
     <div>
       <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>{label}</label>
       <div className="read-box" style={{color}}>{val||'—'}</div>
@@ -382,58 +499,38 @@ function FormKegiatan({initial,desaId,onSave,onClose}) {
           <div style={{fontSize:15,fontWeight:700,color:'#166534'}}>{f.id?'✏️ Edit Kegiatan':'➕ Tambah Kegiatan'}</div>
           <button onClick={onClose} style={{border:'none',background:'none',fontSize:20}}>✕</button>
         </div>
-
-        {/* A */}
         <div className="sec-box">
           <div className="sec-title">A. Identifikasi Kegiatan</div>
           <div className="grid2" style={{marginBottom:10}}>
-            <div>
-              <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>Sumber Dana<span style={{color:'red'}}>*</span></label>
-              <select value={f.sumber_dana} onChange={e=>s('sumber_dana',e.target.value)}>
-                <option value="DDS">DDS</option><option value="SDD">SDD</option>
-              </select>
-            </div>
+            <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>Sumber Dana<span style={{color:'red'}}>*</span></label>
+              <select value={f.sumber_dana} onChange={e=>s('sumber_dana',e.target.value)}><option value="DDS">DDS</option><option value="SDD">SDD</option></select></div>
             {fld('Kode Induk/Sub Kegiatan','kode_induk')}
             {fld('Kode Rekening','kode_rekening')}
           </div>
           {fld('Uraian APBDes','uraian_apbdes','text',true)}
-          <div style={{marginTop:10}}>
-            <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>Uraian Detail Kegiatan<span style={{color:'red'}}>*</span></label>
-            <textarea value={f.uraian_detail} onChange={e=>s('uraian_detail',e.target.value)} rows={2} style={{resize:'vertical'}}/>
-          </div>
+          <div style={{marginTop:10}}><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>Uraian Detail<span style={{color:'red'}}>*</span></label>
+            <textarea value={f.uraian_detail} onChange={e=>s('uraian_detail',e.target.value)} rows={2} style={{resize:'vertical'}}/></div>
         </div>
-
-        {/* B */}
         <div className="sec-box">
           <div className="sec-title">B. Klasifikasi & Tagging</div>
           <div className="grid2">
             {sel('Tagging SDGs','sdgs',SDGS,true)}
             {sel('Tagging Prioritas','prioritas',PRIORITAS,true)}
             {sel('Kategori Kegiatan','kategori',KATEGORI,true,()=>{s('jenis_kegiatan_utama','');s('jenis_kegiatan','')})}
-            <div>
-              <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>Kegiatan<span style={{color:'red'}}>*</span></label>
+            <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>Kegiatan<span style={{color:'red'}}>*</span></label>
               <select value={f.jenis_kegiatan_utama} onChange={e=>{s('jenis_kegiatan_utama',e.target.value);s('jenis_kegiatan','')}}>
-                <option value="">— Pilih —</option>
-                <option value="sarpras">Sarpras</option>
-                <option value="non_sarpras">Non Sarpras</option>
-              </select>
-            </div>
-            <div style={{gridColumn:'1/-1'}}>
-              <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>Jenis Kegiatan<span style={{color:'red'}}>*</span></label>
+                <option value="">— Pilih —</option><option value="sarpras">Sarpras</option><option value="non_sarpras">Non Sarpras</option>
+              </select></div>
+            <div style={{gridColumn:'1/-1'}}><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>Jenis Kegiatan<span style={{color:'red'}}>*</span></label>
               {jenisList.length>0
-                ? <select value={f.jenis_kegiatan} onChange={e=>s('jenis_kegiatan',e.target.value)}>
-                    <option value="">— Pilih —</option>
-                    {jenisList.map(([v,l])=><option key={v} value={String(v)}>{v}. {l}</option>)}
-                  </select>
-                : <div style={{padding:'8px 10px',border:'1px solid #e5e7eb',borderRadius:8,fontSize:12,color:'#9ca3af'}}>
-                    {f.kategori&&f.jenis_kegiatan_utama?'Tidak ada pilihan untuk kombinasi ini.':'Pilih Kategori dan Kegiatan terlebih dahulu.'}
-                  </div>
-              }
+                ?<select value={f.jenis_kegiatan} onChange={e=>s('jenis_kegiatan',e.target.value)}>
+                  <option value="">— Pilih —</option>
+                  {jenisList.map(([v,l])=><option key={v} value={String(v)}>{v}. {l}</option>)}
+                </select>
+                :<div style={{padding:'8px 10px',border:'1px solid #e5e7eb',borderRadius:8,fontSize:12,color:'#9ca3af'}}>{f.kategori&&f.jenis_kegiatan_utama?'Tidak ada pilihan untuk kombinasi ini.':'Pilih Kategori dan Kegiatan terlebih dahulu.'}</div>}
             </div>
           </div>
         </div>
-
-        {/* C */}
         <div className="sec-box">
           <div className="sec-title">C. Pengadaan</div>
           <div className="grid2">
@@ -442,8 +539,6 @@ function FormKegiatan({initial,desaId,onSave,onClose}) {
             {fld('Anggaran APBDes (Rp)','anggaran_apbdes','number')}
           </div>
         </div>
-
-        {/* D */}
         <div className="sec-box">
           <div className="sec-title">D. Rencana Kegiatan</div>
           <div className="grid2">
@@ -455,8 +550,6 @@ function FormKegiatan({initial,desaId,onSave,onClose}) {
             {fld('Volume Kegiatan','rencana_volume','number',true)}
           </div>
         </div>
-
-        {/* E */}
         <div className="sec-box">
           <div className="sec-title">E. Realisasi Kegiatan</div>
           <div className="grid2">
@@ -467,18 +560,13 @@ function FormKegiatan({initial,desaId,onSave,onClose}) {
             {fld('Jumlah Realisasi','realisasi_jumlah','number')}
             {fld('Volume Realisasi','realisasi_volume','number')}
             {rbox('% Realisasi Fisik',f.rencana_volume>0?pctFis+'%':'—',pctColor(pctFis))}
-            <div style={{gridColumn:'1/-1'}}>
-              <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>Keterangan</label>
-              <textarea value={f.realisasi_keterangan} onChange={e=>s('realisasi_keterangan',e.target.value)} rows={2} style={{resize:'vertical'}}/>
-            </div>
+            <div style={{gridColumn:'1/-1'}}><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>Keterangan</label>
+              <textarea value={f.realisasi_keterangan} onChange={e=>s('realisasi_keterangan',e.target.value)} rows={2} style={{resize:'vertical'}}/></div>
           </div>
         </div>
-
-        {err && <div className="alert alert-err">⚠️ {err}</div>}
+        {err&&<div className="alert alert-err">⚠️ {err}</div>}
         <div style={{display:'flex',gap:8}}>
-          <button onClick={simpan} disabled={saving} className="btn-green" style={{flex:1,padding:12,fontSize:14,opacity:saving?0.7:1}}>
-            {saving?'Menyimpan...':'💾 Simpan Kegiatan'}
-          </button>
+          <button onClick={simpan} disabled={saving} className="btn-green" style={{flex:1,padding:12,fontSize:14,opacity:saving?0.7:1}}>{saving?'Menyimpan...':'💾 Simpan Kegiatan'}</button>
           <button onClick={onClose} className="btn-outline" style={{padding:'12px 20px',fontSize:14}}>Batal</button>
         </div>
       </div>
@@ -487,7 +575,7 @@ function FormKegiatan({initial,desaId,onSave,onClose}) {
 }
 
 // ── DESA PAGE ──
-function DesaPage({desaId,desaNama,onLogout}) {
+function DesaPage({desaId,desaNama,pendampingNama,onGantiDesa,onLogout}) {
   const [tab,setTab] = useState('input')
   const [kegiatan,setKegiatan] = useState([])
   const [loading,setLoading] = useState(true)
@@ -497,7 +585,7 @@ function DesaPage({desaId,desaNama,onLogout}) {
   const [desaInfo,setDesaInfo] = useState(null)
   const [search,setSearch] = useState('')
 
-  useEffect(()=>{ loadAll() },[])
+  useEffect(()=>{ loadAll() },[desaId])
 
   const loadAll = async () => {
     setLoading(true)
@@ -505,56 +593,53 @@ function DesaPage({desaId,desaNama,onLogout}) {
       sb.from('desa').select('*').eq('id',desaId).single(),
       sb.from('kegiatan').select('*').eq('desa_id',desaId).order('created_at')
     ])
-    setDesaInfo(d)
-    setKegiatan(k||[])
-    setLoading(false)
+    setDesaInfo(d); setKegiatan(k||[]); setLoading(false)
   }
 
-  const showMsg = (ok,t) => { setMsg({ok,t}); setTimeout(()=>setMsg(null),3000) }
-
-  const hapus = async (id) => {
-    if (!confirm('Hapus kegiatan ini?')) return
-    const {error} = await sb.from('kegiatan').delete().eq('id',id)
-    if (error) showMsg(false,error.message)
-    else { showMsg(true,'Kegiatan berhasil dihapus'); loadAll() }
+  const showMsg=(ok,t)=>{setMsg({ok,t});setTimeout(()=>setMsg(null),3000)}
+  const hapus=async(id)=>{
+    if(!confirm('Hapus kegiatan ini?'))return
+    const{error}=await sb.from('kegiatan').delete().eq('id',id)
+    if(error)showMsg(false,error.message)
+    else{showMsg(true,'Kegiatan dihapus');loadAll()}
   }
 
-  const totA = kegiatan.reduce((s,kg)=>s+(kg.rencana_dd||0),0)
-  const totR = kegiatan.reduce((s,kg)=>s+(kg.realisasi_dd||0),0)
-
-  const filtered = kegiatan.filter(kg=>!search||kg.uraian_apbdes?.toLowerCase().includes(search.toLowerCase()))
+  const totA=kegiatan.reduce((s,kg)=>s+(kg.rencana_dd||0),0)
+  const totR=kegiatan.reduce((s,kg)=>s+(kg.realisasi_dd||0),0)
+  const filtered=kegiatan.filter(kg=>!search||kg.uraian_apbdes?.toLowerCase().includes(search.toLowerCase()))
 
   return (
     <div style={{minHeight:'100vh',background:'#f0fdf4'}}>
-      {showForm && <FormKegiatan initial={editKeg} desaId={desaId} onSave={()=>{setShowForm(false);setEditKeg(null);showMsg(true,'Kegiatan berhasil disimpan!');loadAll()}} onClose={()=>{setShowForm(false);setEditKeg(null)}}/>}
+      {showForm&&<FormKegiatan initial={editKeg} desaId={desaId} onSave={()=>{setShowForm(false);setEditKeg(null);showMsg(true,'Kegiatan berhasil disimpan!');loadAll()}} onClose={()=>{setShowForm(false);setEditKeg(null)}}/>}
       <div className="wrap">
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem',flexWrap:'wrap',gap:8,paddingTop:'1rem'}}>
           <div>
             <h1 style={{fontSize:18,fontWeight:700,color:'#166534',margin:0}}>🏡 Desa {desaNama}</h1>
-            <p style={{fontSize:12,color:'#6b7280',margin:0}}>{desaInfo?.kecamatan} — {desaInfo?.kabupaten}</p>
+            <p style={{fontSize:12,color:'#6b7280',margin:0}}>{desaInfo?.kecamatan&&`${desaInfo.kecamatan} · `}{desaInfo?.kabupaten} · Pendamping: <b>{pendampingNama||'-'}</b></p>
           </div>
-          <button onClick={onLogout} className="btn-outline" style={{fontSize:13}}>Keluar</button>
+          <div style={{display:'flex',gap:8}}>
+            <button onClick={onGantiDesa} className="btn-outline" style={{fontSize:13}}>🔄 Ganti Desa</button>
+            <button onClick={onLogout} className="btn-outline" style={{fontSize:13}}>Keluar</button>
+          </div>
         </div>
 
         <div className="tab-bar">
-          {['input','preview'].map((t,i)=>(
-            <button key={t} onClick={()=>setTab(t)} className={`tab-btn${tab===t?' active':''}`}>{i===0?'📝 Input Kegiatan':'📊 Pratinjau'}</button>
+          {[['input','📝 Input Kegiatan'],['preview','📊 Pratinjau']].map(([t,l])=>(
+            <button key={t} onClick={()=>setTab(t)} className={`tab-btn${tab===t?' active':''}`}>{l}</button>
           ))}
         </div>
 
-        {msg && <Alert ok={msg.ok} text={msg.t}/>}
+        {msg&&<Alert ok={msg.ok} text={msg.t}/>}
 
-        {tab==='input' && <>
-          <button onClick={()=>{setEditKeg(null);setShowForm(true)}} className="btn-green" style={{width:'100%',padding:12,fontSize:14,marginBottom:'1rem'}}>
-            + Tambah Kegiatan
-          </button>
+        {tab==='input'&&<>
+          <button onClick={()=>{setEditKeg(null);setShowForm(true)}} className="btn-green" style={{width:'100%',padding:12,fontSize:14,marginBottom:'1rem'}}>+ Tambah Kegiatan</button>
           <div className="card">
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12,flexWrap:'wrap',gap:8}}>
               <div className="sec-title" style={{marginBottom:0}}>Daftar Kegiatan ({kegiatan.length})</div>
               <input placeholder="🔍 Cari uraian..." value={search} onChange={e=>setSearch(e.target.value)} style={{width:180,fontSize:12}}/>
             </div>
-            {loading ? <div style={{textAlign:'center',padding:'2rem',color:'#6b7280'}}>Memuat...</div> :
-             filtered.length===0 ? <div style={{textAlign:'center',padding:'2rem',color:'#9ca3af',border:'2px dashed #e5e7eb',borderRadius:8}}>Belum ada kegiatan</div> :
+            {loading?<div style={{textAlign:'center',padding:'2rem',color:'#6b7280'}}>Memuat...</div>:
+             filtered.length===0?<div style={{textAlign:'center',padding:'2rem',color:'#9ca3af',border:'2px dashed #e5e7eb',borderRadius:8}}>Belum ada kegiatan</div>:
             <div style={{overflowX:'auto'}}>
               <table>
                 <thead><tr><th>No</th><th>Sumber</th><th>Uraian APBDes</th><th>Kategori</th><th>Jenis</th><th>Ang.DD</th><th>Real.DD</th><th>%Ang</th><th>%Fisik</th><th>Aksi</th></tr></thead>
@@ -564,7 +649,7 @@ function DesaPage({desaId,desaNama,onLogout}) {
                   const jLabel=jList.find(j=>String(j[0])===String(kg.jenis_kegiatan))
                   const pA=calcPct(kg.realisasi_dd,kg.rencana_dd)
                   const pF=kg.rencana_volume>0?calcPct(kg.realisasi_volume,kg.rencana_volume):null
-                  return (
+                  return(
                     <tr key={kg.id}>
                       <td>{i+1}</td>
                       <td><span className="badge" style={{background:'#dbeafe',color:'#1d4ed8'}}>{kg.sumber_dana}</span></td>
@@ -575,12 +660,10 @@ function DesaPage({desaId,desaNama,onLogout}) {
                       <td>{fmtS(kg.realisasi_dd||0)}</td>
                       <td><span style={{fontWeight:700,color:pctColor(pA)}}>{pA}%</span></td>
                       <td><span style={{fontWeight:700,color:pF===null?'#9ca3af':pctColor(pF)}}>{pF===null?'—':pF+'%'}</span></td>
-                      <td>
-                        <div style={{display:'flex',gap:4}}>
-                          <button onClick={()=>{setEditKeg(kg);setShowForm(true)}} style={{fontSize:11,padding:'4px 8px',border:'1px solid #3b82f6',color:'#3b82f6',background:'white',borderRadius:6}}>✏️</button>
-                          <button onClick={()=>hapus(kg.id)} style={{fontSize:11,padding:'4px 8px',border:'1px solid #ef4444',color:'#ef4444',background:'white',borderRadius:6}}>🗑</button>
-                        </div>
-                      </td>
+                      <td><div style={{display:'flex',gap:4}}>
+                        <button onClick={()=>{setEditKeg(kg);setShowForm(true)}} style={{fontSize:11,padding:'4px 8px',border:'1px solid #3b82f6',color:'#3b82f6',background:'white',borderRadius:6}}>✏️</button>
+                        <button onClick={()=>hapus(kg.id)} style={{fontSize:11,padding:'4px 8px',border:'1px solid #ef4444',color:'#ef4444',background:'white',borderRadius:6}}>🗑</button>
+                      </div></td>
                     </tr>
                   )
                 })}</tbody>
@@ -589,7 +672,7 @@ function DesaPage({desaId,desaNama,onLogout}) {
           </div>
         </>}
 
-        {tab==='preview' && <>
+        {tab==='preview'&&<>
           <div className="grid3">
             {[['Total Anggaran DD',fmtS(totA),'#166534'],['Total Realisasi DD',fmtS(totR),'#166534'],['Sisa Anggaran',fmtS(totA-totR),'#92400e'],['Jml Kegiatan',kegiatan.length,'#1d4ed8']].map(([l,v,c])=>(
               <div key={l} className="metric"><div className="metric-label">{l}</div><div className="metric-value" style={{color:c}}>{v}</div></div>
@@ -604,7 +687,7 @@ function DesaPage({desaId,desaNama,onLogout}) {
               const jLabel=jList.find(j=>String(j[0])===String(kg.jenis_kegiatan))
               const pA=calcPct(kg.realisasi_dd,kg.rencana_dd)
               const pF=kg.rencana_volume>0?calcPct(kg.realisasi_volume,kg.rencana_volume):null
-              return (
+              return(
                 <div key={kg.id} style={{marginBottom:12,padding:12,border:'1px solid #e5e7eb',borderRadius:10}}>
                   <div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8,marginBottom:6}}>
                     <div style={{fontWeight:600,fontSize:13}}>{i+1}. {kg.uraian_apbdes||'(tanpa uraian)'}</div>
@@ -634,14 +717,14 @@ function DesaPage({desaId,desaNama,onLogout}) {
 
 // ── PUBLIK PAGE ──
 function PublikPage({onBack}) {
-  const [desas,setDesas] = useState([])
-  const [kegiatan,setKegiatan] = useState([])
-  const [loading,setLoading] = useState(true)
-  const [search,setSearch] = useState('')
+  const [desas,setDesas]=useState([])
+  const [kegiatan,setKegiatan]=useState([])
+  const [loading,setLoading]=useState(true)
+  const [search,setSearch]=useState('')
 
   useEffect(()=>{
     (async()=>{
-      const [{data:d},{data:k}] = await Promise.all([
+      const [{data:d},{data:k}]=await Promise.all([
         sb.from('desa').select('*').order('nama'),
         sb.from('kegiatan').select('*')
       ])
@@ -649,48 +732,39 @@ function PublikPage({onBack}) {
     })()
   },[])
 
-  const totA = kegiatan.reduce((s,kg)=>s+(kg.rencana_dd||0),0)
-  const totR = kegiatan.reduce((s,kg)=>s+(kg.realisasi_dd||0),0)
-  const filtered = desas.filter(d=>!search||d.nama.toLowerCase().includes(search.toLowerCase()))
-
-  const desaStat = (desaId) => {
-    const kgs = kegiatan.filter(k=>k.desa_id===desaId)
-    return {
-      totA: kgs.reduce((s,k)=>s+(k.rencana_dd||0),0),
-      totR: kgs.reduce((s,k)=>s+(k.realisasi_dd||0),0),
-      jml: kgs.length
-    }
+  const totA=kegiatan.reduce((s,kg)=>s+(kg.rencana_dd||0),0)
+  const totR=kegiatan.reduce((s,kg)=>s+(kg.realisasi_dd||0),0)
+  const filtered=desas.filter(d=>!search||d.nama.toLowerCase().includes(search.toLowerCase()))
+  const desaStat=id=>{
+    const kgs=kegiatan.filter(k=>k.desa_id===id)
+    return{totA:kgs.reduce((s,k)=>s+(k.rencana_dd||0),0),totR:kgs.reduce((s,k)=>s+(k.realisasi_dd||0),0),jml:kgs.length}
   }
 
-  return (
+  return(
     <div style={{minHeight:'100vh',background:'#f0fdf4'}}>
       <div className="wrap">
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem',flexWrap:'wrap',gap:8,paddingTop:'1rem'}}>
-          <div>
-            <h1 style={{fontSize:18,fontWeight:700,color:'#166534',margin:0}}>📊 Dashboard Publik Dana Desa</h1>
-            <p style={{fontSize:12,color:'#6b7280',margin:0}}>Transparansi penggunaan anggaran desa</p>
-          </div>
-          <button onClick={onBack} className="btn-outline" style={{fontSize:13}}>Login Desa</button>
+          <div><h1 style={{fontSize:18,fontWeight:700,color:'#166534',margin:0}}>📊 Dashboard Publik Dana Desa</h1>
+          <p style={{fontSize:12,color:'#6b7280',margin:0}}>Transparansi penggunaan anggaran desa</p></div>
+          <button onClick={onBack} className="btn-outline" style={{fontSize:13}}>← Login</button>
         </div>
-
         <div className="grid3">
           {[['Total Desa',desas.length,'#166534'],['Total Anggaran DD',fmtS(totA),'#166534'],['Total Realisasi DD',fmtS(totR),'#166534'],['Rata-rata Serapan',calcPct(totR,totA)+'%',pctColor(calcPct(totR,totA))]].map(([l,v,c])=>(
             <div key={l} className="metric"><div className="metric-label">{l}</div><div className="metric-value" style={{color:c}}>{v}</div></div>
           ))}
         </div>
-
         <div className="card">
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12,flexWrap:'wrap',gap:8}}>
             <div className="sec-title" style={{marginBottom:0}}>Rekap per Desa</div>
             <input placeholder="🔍 Cari desa..." value={search} onChange={e=>setSearch(e.target.value)} style={{width:180,fontSize:12}}/>
           </div>
-          {loading ? <div style={{textAlign:'center',padding:'2rem',color:'#6b7280'}}>Memuat...</div> :
+          {loading?<div style={{textAlign:'center',padding:'2rem',color:'#6b7280'}}>Memuat...</div>:
           <div style={{overflowX:'auto'}}>
             <table>
               <thead><tr><th>Desa</th><th>Kecamatan</th><th>Kabupaten</th><th>Anggaran DD</th><th>Realisasi DD</th><th>Serapan</th><th>Jml Kegiatan</th></tr></thead>
               <tbody>{filtered.map(d=>{
                 const st=desaStat(d.id)
-                return (
+                return(
                   <tr key={d.id}>
                     <td style={{fontWeight:600}}>{d.nama}</td>
                     <td style={{color:'#6b7280',fontSize:11}}>{d.kecamatan||'-'}</td>
@@ -710,19 +784,24 @@ function PublikPage({onBack}) {
   )
 }
 
-// ── APP ──
+// ── APP UTAMA ──
 function App() {
-  const [role,setRole] = useState(null)
-  const [desaId,setDesaId] = useState(null)
-  const [desaNama,setDesaNama] = useState(null)
+  const [role,setRole]=useState(null)           // null | admin | pendamping | publik
+  const [pendampingId,setPendampingId]=useState(null)
+  const [pendampingNama,setPendampingNama]=useState(null)
+  const [desaId,setDesaId]=useState(null)
+  const [desaNama,setDesaNama]=useState(null)
 
-  const handleLogin = (r,id,nama) => { setRole(r); setDesaId(id); setDesaNama(nama) }
-  const handleLogout = () => { setRole(null); setDesaId(null); setDesaNama(null) }
+  const handleLogin=(r,pid,pnama)=>{setRole(r);setPendampingId(pid);setPendampingNama(pnama);setDesaId(null);setDesaNama(null)}
+  const handlePilihDesa=(did,dnama)=>{setDesaId(did);setDesaNama(dnama)}
+  const handleGantiDesa=()=>{setDesaId(null);setDesaNama(null)}
+  const handleLogout=()=>{setRole(null);setPendampingId(null);setPendampingNama(null);setDesaId(null);setDesaNama(null)}
 
-  if (!role) return <LoginPage onLogin={handleLogin}/>
-  if (role==='admin') return <AdminPage onLogout={handleLogout}/>
-  if (role==='desa') return <DesaPage desaId={desaId} desaNama={desaNama} onLogout={handleLogout}/>
-  if (role==='publik') return <PublikPage onBack={handleLogout}/>
+  if(!role) return <LoginPage onLogin={handleLogin}/>
+  if(role==='admin') return <AdminPage onLogout={handleLogout}/>
+  if(role==='publik') return <PublikPage onBack={handleLogout}/>
+  if(role==='pendamping'&&!desaId) return <PilihDesaPage pendampingNama={pendampingNama} onPilihDesa={handlePilihDesa} onLogout={handleLogout}/>
+  if(role==='pendamping'&&desaId) return <DesaPage desaId={desaId} desaNama={desaNama} pendampingNama={pendampingNama} onGantiDesa={handleGantiDesa} onLogout={handleLogout}/>
   return null
 }
 
