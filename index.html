@@ -205,6 +205,7 @@ function PilihDesaPage({user, onPilihDesa, onLogout}) {
 
 // ── ADMIN PAGE ──
 function AdminPage({onLogout}) {
+
   const [tab,setTab] = useState('desa')
   const [desas,setDesas] = useState([])
   const [loading,setLoading] = useState(true)
@@ -363,14 +364,10 @@ function AdminPage({onLogout}) {
 
   useEffect(()=>{ loadAll() },[])
 
-  const loadAll = async () => {
+  const loadDesa = async () => {
     setLoading(true)
-    const [{data:d},{data:p}] = await Promise.all([
-      sb.from('desa').select('*').order('nama'),
-      sb.from('pendamping').select('*').order('nama')
-    ])
-    setDesas(d||[]); setPendampings(p||[])
-    setLoading(false)
+    const {data} = await sb.from('desa').select('*').order('nama')
+    setDesas(data||[]); setLoading(false)
   }
 
   const showMsg = (ok,t) => { setMsg({ok,t}); setTimeout(()=>setMsg(null),4000) }
