@@ -50,12 +50,15 @@ td { padding: 8px 10px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
 <script>
   const SUPABASE_URL = 'https://hyzysbjtrbmquvxzhyyq.supabase.co'
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5enlzYmp0cmJtcXV2eHpoeXlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MTY1NDEsImV4cCI6MjA5MzI5MjU0MX0.lUGfRlijr_DRZWjTm5h3SvZxnOQVfT_K3fO_GL2f1yg'
-  const ADMIN_PASSWORD = 'admin2024'
 </script>
 <div id="root"></div>
 <script type="text/babel">
 const { useState, useEffect } = React
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+// ── AUTH HELPERS ──
+const getRole = (user) => user?.user_metadata?.role || null
+const isAdmin = (user) => getRole(user) === 'admin'
 
 // ── DATA MASTER ──
 const SDGS=[[1,"Desa tanpa Kemiskinan"],[2,"Desa tanpa Kelaparan"],[3,"Desa Sehat dan Sejahtera"],[4,"Pendidikan desa berkualitas"],[5,"Keterlibatan Perempuan Desa"],[6,"Desa layak air bersih dan sanitasi"],[7,"Desa berenergi bersih dan terbarukan"],[8,"Pertumbuhan ekonomi desa merata"],[9,"Infrastruktur dan inovasi desa sesuai kebutuhan"],[10,"Desa tanpa kesenjangan"],[11,"Kawasan permukiman desa aman dan nyaman"],[12,"Konsumsi dan produksi desa sadar lingkungan"],[13,"Desa tanggap perubahan iklim"],[14,"Desa peduli lingkungan laut"],[15,"Desa peduli lingkungan darat"],[16,"Desa damai berkeadilan"],[17,"Kemitraan untuk pembangunan desa"]]
@@ -85,10 +88,11 @@ function Bar({p}) {
   )
 }
 
-// ── HALAMAN LOGIN UTAMA ──
+// ── HALAMAN LOGIN ──
 function LoginPage({onLogin}) {
   const [mode,setMode] = useState('pendamping')
   const [username,setUsername] = useState('')
+  const [email,setEmail] = useState('')
   const [password,setPassword] = useState('')
   const [err,setErr] = useState('')
   const [loading,setLoading] = useState(false)
@@ -96,16 +100,20 @@ function LoginPage({onLogin}) {
   const login = async () => {
     setErr(''); setLoading(true)
     try {
+      let loginEmail = ''
       if (mode==='admin') {
-        if (password===ADMIN_PASSWORD) onLogin('admin',null,null,null)
-        else setErr('Password admin salah')
+        if (!email.trim()) { setErr('Email wajib diisi'); setLoading(false); return }
+        loginEmail = email.trim()
       } else {
         if (!username||username.length!==16) { setErr('Username harus 16 digit angka'); setLoading(false); return }
-        if (!password) { setErr('Password wajib diisi'); setLoading(false); return }
-        const {data,error} = await sb.from('pendamping').select('*').eq('username',username).eq('password',password).single()
-        if (error||!data) setErr('Username atau password salah')
-        else onLogin('pendamping',data.id,data.nama,null)
+        loginEmail = `${username}@danadesa.id`
       }
+      if (!password) { setErr('Password wajib diisi'); setLoading(false); return }
+      const {data,error} = await sb.auth.signInWithPassword({email:loginEmail, password})
+      if (error||!data.user) { setErr('Email/username atau password salah'); setLoading(false); return }
+      if (mode==='admin' && !isAdmin(data.user)) { await sb.auth.signOut(); setErr('Akun ini tidak punya akses admin'); setLoading(false); return }
+      if (mode==='pendamping' && isAdmin(data.user)) { await sb.auth.signOut(); setErr('Gunakan tab Admin untuk akun ini'); setLoading(false); return }
+      onLogin(data.user)
     } catch(e) { setErr('Terjadi kesalahan, coba lagi') }
     setLoading(false)
   }
@@ -119,34 +127,34 @@ function LoginPage({onLogin}) {
           <p style={{fontSize:13,color:'#6b7280',marginTop:4}}>Transparansi penggunaan anggaran desa</p>
         </div>
         <div style={{display:'flex',background:'#f3f4f6',borderRadius:10,padding:4,marginBottom:'1.5rem'}}>
-          {[['pendamping','👤 Login Pendamping'],['admin','⚙️ Admin']].map(([m,l])=>(
+          {[['pendamping','👤 Pendamping'],['admin','⚙️ Admin']].map(([m,l])=>(
             <button key={m} onClick={()=>{setMode(m);setErr('')}}
               style={{flex:1,padding:8,fontSize:12,border:'none',borderRadius:8,background:mode===m?'white':'transparent',color:mode===m?'#166534':'#6b7280',fontWeight:mode===m?600:400,boxShadow:mode===m?'0 1px 4px rgba(0,0,0,0.1)':'none'}}>
               {l}
             </button>
           ))}
         </div>
-        {mode==='pendamping' ? (<>
+        {mode==='pendamping' ? (
           <div style={{marginBottom:10}}>
             <label style={{fontSize:13,color:'#374151',fontWeight:500,display:'block',marginBottom:6}}>Username (16 digit angka)</label>
             <input type="text" inputMode="numeric" maxLength={16} value={username} onChange={e=>setUsername(e.target.value.replace(/\D/g,''))} placeholder="Masukkan username 16 digit" style={{letterSpacing:2}}/>
           </div>
-          <div style={{marginBottom:12}}>
-            <label style={{fontSize:13,color:'#374151',fontWeight:500,display:'block',marginBottom:6}}>Password</label>
-            <input type="password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()} placeholder="Masukkan password"/>
-          </div>
-        </>) : (
-          <div style={{marginBottom:12}}>
-            <label style={{fontSize:13,color:'#374151',fontWeight:500,display:'block',marginBottom:6}}>Password Admin</label>
-            <input type="password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()} placeholder="Password admin"/>
+        ) : (
+          <div style={{marginBottom:10}}>
+            <label style={{fontSize:13,color:'#374151',fontWeight:500,display:'block',marginBottom:6}}>Email Admin</label>
+            <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="admin@danadesa.id"/>
           </div>
         )}
+        <div style={{marginBottom:12}}>
+          <label style={{fontSize:13,color:'#374151',fontWeight:500,display:'block',marginBottom:6}}>Password</label>
+          <input type="password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()} placeholder="Masukkan password"/>
+        </div>
         {err && <div className="alert alert-err">⚠️ {err}</div>}
         <button onClick={login} disabled={loading} className="btn-green" style={{width:'100%',padding:12,fontSize:15,opacity:loading?0.7:1}}>
           {loading?'Memproses...':'Masuk'}
         </button>
         <div style={{textAlign:'center',marginTop:12}}>
-          <button onClick={()=>onLogin('publik',null,null,null)} style={{fontSize:13,border:'none',background:'none',color:'#2563eb',textDecoration:'underline'}}>
+          <button onClick={()=>onLogin('publik')} style={{fontSize:13,border:'none',background:'none',color:'#2563eb',textDecoration:'underline'}}>
             📊 Lihat dashboard publik
           </button>
         </div>
@@ -156,7 +164,8 @@ function LoginPage({onLogin}) {
 }
 
 // ── HALAMAN PILIH DESA (setelah login pendamping) ──
-function PilihDesaPage({pendampingNama, onPilihDesa, onLogout}) {
+function PilihDesaPage({user, onPilihDesa, onLogout}) {
+  const username = user?.user_metadata?.username || user?.email?.split('@')[0] || ''
   const [kode,setKode] = useState('')
   const [err,setErr] = useState('')
   const [loading,setLoading] = useState(false)
@@ -176,7 +185,7 @@ function PilihDesaPage({pendampingNama, onPilihDesa, onLogout}) {
         <div style={{textAlign:'center',marginBottom:'1.5rem'}}>
           <div style={{fontSize:36,marginBottom:8}}>🏘</div>
           <h2 style={{fontSize:18,fontWeight:700,color:'#166534'}}>Pilih Desa</h2>
-          <p style={{fontSize:13,color:'#6b7280',marginTop:4}}>Halo, <b>{pendampingNama||'Pendamping'}</b>! Masukkan kode desa yang akan diinput.</p>
+          <p style={{fontSize:13,color:'#6b7280',marginTop:4}}>Halo, <b>{username}</b>! Masukkan kode desa yang akan diinput.</p>
         </div>
         <div style={{marginBottom:12}}>
           <label style={{fontSize:13,color:'#374151',fontWeight:500,display:'block',marginBottom:6}}>Kode Desa (10 digit angka)</label>
@@ -196,6 +205,146 @@ function PilihDesaPage({pendampingNama, onPilihDesa, onLogout}) {
 
 // ── ADMIN PAGE ──
 function AdminPage({onLogout}) {
+  const [tab,setTab] = useState('desa')
+  const [desas,setDesas] = useState([])
+  const [loading,setLoading] = useState(true)
+  const [msg,setMsg] = useState(null)
+  const [editDesa,setEditDesa] = useState(null)
+
+  const [dNama,setDNama]=useState(''); const [dKode,setDKode]=useState('')
+  const [dKec,setDKec]=useState(''); const [dKab,setDKab]=useState(''); const [dAng,setDAng]=useState('')
+
+  useEffect(()=>{ loadDesa() },[])
+
+  const loadDesa = async () => {
+    setLoading(true)
+    const {data} = await sb.from('desa').select('*').order('nama')
+    setDesas(data||[]); setLoading(false)
+  }
+
+  const showMsg = (ok,t) => { setMsg({ok,t}); setTimeout(()=>setMsg(null),4000) }
+
+  const tambahDesa = async () => {
+    if (!dNama.trim()) { showMsg(false,'Isi nama desa'); return }
+    if (!/^\d{10}$/.test(dKode)) { showMsg(false,'Kode desa harus 10 digit angka'); return }
+    if (desas.find(d=>d.kode_desa===dKode)) { showMsg(false,'Kode desa sudah dipakai'); return }
+    const {error} = await sb.from('desa').insert([{nama:dNama,kode_desa:dKode,kecamatan:dKec,kabupaten:dKab,anggaran:Number(dAng)||0}])
+    if (error) { showMsg(false,error.message); return }
+    showMsg(true,`Desa "${dNama}" berhasil ditambahkan`)
+    setDNama(''); setDKode(''); setDKec(''); setDKab(''); setDAng('')
+    loadDesa()
+  }
+
+  const hapusDesa = async (id,nama) => {
+    if (!confirm(`Hapus desa ${nama}?`)) return
+    const {error} = await sb.from('desa').delete().eq('id',id)
+    if (error) showMsg(false,error.message)
+    else { showMsg(true,'Desa berhasil dihapus'); loadDesa() }
+  }
+
+  const simpanEditDesa = async () => {
+    const {error} = await sb.from('desa').update({nama:editDesa.nama,kode_desa:editDesa.kode_desa,kecamatan:editDesa.kecamatan,kabupaten:editDesa.kabupaten,anggaran:editDesa.anggaran}).eq('id',editDesa.id)
+    if (error) showMsg(false,error.message)
+    else { showMsg(true,'Data desa diupdate'); setEditDesa(null); loadDesa() }
+  }
+
+  const logout = async () => { await sb.auth.signOut(); onLogout() }
+
+  return (
+    <div style={{minHeight:'100vh',background:'#f0fdf4'}}>
+      <div className="wrap">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem',flexWrap:'wrap',gap:8,paddingTop:'1rem'}}>
+          <div><h1 style={{fontSize:18,fontWeight:700,color:'#166534',margin:0}}>⚙️ Panel Admin</h1>
+          <p style={{fontSize:12,color:'#6b7280',margin:0}}>{desas.length} desa terdaftar</p></div>
+          <button onClick={logout} className="btn-outline" style={{fontSize:13}}>Keluar</button>
+        </div>
+
+        <div className="tab-bar">
+          {[['desa','🏘 Kelola Desa'],['rekap','📊 Rekap']].map(([t,l])=>(
+            <button key={t} onClick={()=>setTab(t)} className={`tab-btn${tab===t?' active':''}`}>{l}</button>
+          ))}
+        </div>
+
+        {msg && <Alert ok={msg.ok} text={msg.t}/>}
+
+        {tab==='desa' && <>
+          <div className="card">
+            <div className="sec-title">Tambah Desa Baru</div>
+            <div className="grid2" style={{marginBottom:10}}>
+              {[['Nama Desa',dNama,setDNama,'Nama desa'],['Kode Desa (10 digit)',dKode,v=>setDKode(v.replace(/\D/g,'')),'1234567890'],['Kecamatan',dKec,setDKec,'Kecamatan'],['Kabupaten/Kota',dKab,setDKab,'Kabupaten/Kota']].map(([l,v,fn,ph])=>(
+                <div key={l}><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>{l}</label><input value={v} onChange={e=>fn(e.target.value)} placeholder={ph}/></div>
+              ))}
+              <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Total Anggaran (Rp)</label><input type="number" value={dAng} onChange={e=>setDAng(e.target.value)} placeholder="1200000000"/></div>
+            </div>
+            <button onClick={tambahDesa} className="btn-green" style={{padding:'9px 20px'}}>+ Tambah Desa</button>
+          </div>
+          <div className="card">
+            <div className="sec-title">Daftar Desa ({desas.length})</div>
+            {loading?<div style={{textAlign:'center',padding:'2rem',color:'#6b7280'}}>Memuat...</div>:
+             desas.length===0?<div style={{textAlign:'center',padding:'2rem',color:'#9ca3af'}}>Belum ada desa</div>:
+            <div style={{overflowX:'auto'}}>
+              <table>
+                <thead><tr><th>Nama Desa</th><th>Kode</th><th>Kecamatan</th><th>Kabupaten</th><th>Anggaran</th><th>Aksi</th></tr></thead>
+                <tbody>{desas.map(d=>(
+                  <tr key={d.id}>
+                    <td style={{fontWeight:600}}>{d.nama}</td>
+                    <td><code style={{fontSize:12,letterSpacing:1,background:'#f3f4f6',padding:'2px 6px',borderRadius:4}}>{d.kode_desa}</code></td>
+                    <td style={{color:'#6b7280'}}>{d.kecamatan||'-'}</td>
+                    <td style={{color:'#6b7280'}}>{d.kabupaten||'-'}</td>
+                    <td>{fmtS(d.anggaran||0)}</td>
+                    <td><div style={{display:'flex',gap:6}}>
+                      <button onClick={()=>setEditDesa({...d})} style={{fontSize:11,padding:'4px 10px',border:'1px solid #3b82f6',color:'#3b82f6',background:'white',borderRadius:6}}>✏️ Edit</button>
+                      <button onClick={()=>hapusDesa(d.id,d.nama)} style={{fontSize:11,padding:'4px 10px',border:'1px solid #ef4444',color:'#ef4444',background:'white',borderRadius:6}}>🗑 Hapus</button>
+                    </div></td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>}
+          </div>
+        </>}
+
+        {tab==='rekap' && <>
+          <div className="grid3">
+            {[['Total Desa',desas.length,'#166534'],['Total Anggaran',fmtS(desas.reduce((s,d)=>s+(d.anggaran||0),0)),'#166534']].map(([l,v,c])=>(
+              <div key={l} className="metric"><div className="metric-label">{l}</div><div className="metric-value" style={{color:c}}>{v}</div></div>
+            ))}
+          </div>
+          <div className="card">
+            <div style={{overflowX:'auto'}}>
+              <table>
+                <thead><tr><th>Desa</th><th>Kecamatan</th><th>Kabupaten</th><th>Anggaran</th></tr></thead>
+                <tbody>{desas.map(d=>(
+                  <tr key={d.id}><td style={{fontWeight:600}}>{d.nama}</td><td style={{color:'#6b7280'}}>{d.kecamatan||'-'}</td><td style={{color:'#6b7280'}}>{d.kabupaten||'-'}</td><td>{fmtS(d.anggaran||0)}</td></tr>
+                ))}</tbody>
+              </table>
+            </div>
+          </div>
+        </>}
+
+        {editDesa && (
+          <div className="modal-bg">
+            <div className="modal" style={{maxWidth:480}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem'}}>
+                <div style={{fontSize:15,fontWeight:700}}>✏️ Edit Desa</div>
+                <button onClick={()=>setEditDesa(null)} style={{border:'none',background:'none',fontSize:20}}>✕</button>
+              </div>
+              <div className="grid2" style={{marginBottom:12}}>
+                {[['Nama Desa','nama'],['Kode Desa','kode_desa'],['Kecamatan','kecamatan'],['Kabupaten','kabupaten']].map(([l,k])=>(
+                  <div key={k}><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>{l}</label><input value={editDesa[k]||''} onChange={e=>setEditDesa({...editDesa,[k]:e.target.value})}/></div>
+                ))}
+                <div style={{gridColumn:'1/-1'}}><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Total Anggaran (Rp)</label><input type="number" value={editDesa.anggaran||0} onChange={e=>setEditDesa({...editDesa,anggaran:Number(e.target.value)})}/></div>
+              </div>
+              <div style={{display:'flex',gap:8}}>
+                <button onClick={simpanEditDesa} className="btn-green" style={{flex:1,padding:10,fontSize:14}}>💾 Simpan</button>
+                <button onClick={()=>setEditDesa(null)} className="btn-outline" style={{padding:'10px 20px',fontSize:14}}>Batal</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
   const [tab,setTab] = useState('desa')
   const [desas,setDesas] = useState([])
   const [pendampings,setPendampings] = useState([])
@@ -786,23 +935,47 @@ function PublikPage({onBack}) {
 
 // ── APP UTAMA ──
 function App() {
-  const [role,setRole]=useState(null)           // null | admin | pendamping | publik
-  const [pendampingId,setPendampingId]=useState(null)
-  const [pendampingNama,setPendampingNama]=useState(null)
-  const [desaId,setDesaId]=useState(null)
-  const [desaNama,setDesaNama]=useState(null)
+  const [user,setUser] = useState(undefined) // undefined = loading, null = tidak login
+  const [desaId,setDesaId] = useState(null)
+  const [desaNama,setDesaNama] = useState(null)
 
-  const handleLogin=(r,pid,pnama)=>{setRole(r);setPendampingId(pid);setPendampingNama(pnama);setDesaId(null);setDesaNama(null)}
-  const handlePilihDesa=(did,dnama)=>{setDesaId(did);setDesaNama(dnama)}
-  const handleGantiDesa=()=>{setDesaId(null);setDesaNama(null)}
-  const handleLogout=()=>{setRole(null);setPendampingId(null);setPendampingNama(null);setDesaId(null);setDesaNama(null)}
+  useEffect(()=>{
+    // Cek session yang sudah ada
+    sb.auth.getSession().then(({data:{session}})=>{
+      setUser(session?.user||null)
+    })
+    // Listen perubahan auth
+    const {data:{subscription}} = sb.auth.onAuthStateChange((_,session)=>{
+      setUser(session?.user||null)
+      if (!session) { setDesaId(null); setDesaNama(null) }
+    })
+    return () => subscription.unsubscribe()
+  },[])
 
-  if(!role) return <LoginPage onLogin={handleLogin}/>
-  if(role==='admin') return <AdminPage onLogout={handleLogout}/>
-  if(role==='publik') return <PublikPage onBack={handleLogout}/>
-  if(role==='pendamping'&&!desaId) return <PilihDesaPage pendampingNama={pendampingNama} onPilihDesa={handlePilihDesa} onLogout={handleLogout}/>
-  if(role==='pendamping'&&desaId) return <DesaPage desaId={desaId} desaNama={desaNama} pendampingNama={pendampingNama} onGantiDesa={handleGantiDesa} onLogout={handleLogout}/>
-  return null
+  const handleLogin = (u) => {
+    if (u==='publik') { setUser('publik'); return }
+    setUser(u)
+  }
+  const handleLogout = async () => {
+    await sb.auth.signOut()
+    setUser(null); setDesaId(null); setDesaNama(null)
+  }
+  const handlePilihDesa = (did,dnama) => { setDesaId(did); setDesaNama(dnama) }
+  const handleGantiDesa = () => { setDesaId(null); setDesaNama(null) }
+
+  // Loading
+  if (user===undefined) return (
+    <div style={{minHeight:'100vh',background:'#f0fdf4',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div style={{fontSize:14,color:'#6b7280'}}>Memuat...</div>
+    </div>
+  )
+
+  if (!user || user===null) return <LoginPage onLogin={handleLogin}/>
+  if (user==='publik') return <PublikPage onBack={handleLogout}/>
+  if (isAdmin(user)) return <AdminPage onLogout={handleLogout}/>
+  if (!desaId) return <PilihDesaPage user={user} onPilihDesa={handlePilihDesa} onLogout={handleLogout}/>
+  return <DesaPage desaId={desaId} desaNama={desaNama} pendampingNama={user?.user_metadata?.username||user?.email?.split('@')[0]} onGantiDesa={handleGantiDesa} onLogout={handleLogout}/>
+}
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>)
