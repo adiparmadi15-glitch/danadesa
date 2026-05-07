@@ -69,7 +69,7 @@ const SATUAN_MAP={1:"meter",2:"m³",3:"unit",4:"meter",5:"unit",6:"meter",7:"m²
 const fmtS = n => `Rp ${Math.round(n||0).toLocaleString('id-ID')}`
 const calcPct = (a,b) => b>0?Math.round((a/b)*100):0
 const pctColor = p => p>=80?'#166534':p>=50?'#92400e':'#991b1b'
-const emptyKeg = () => ({sumber_dana:'DDS',kode_induk:'',kode_rekening:'',uraian_apbdes:'',uraian_detail:'',sdgs:'',prioritas:'',kategori:'',jenis_kegiatan_utama:'',jenis_kegiatan:'',sifat:'',cara:'',anggaran_apbdes:0,rencana_dd:0,rencana_swadaya:0,rencana_jumlah:0,rencana_satuan:'',rencana_volume:0,realisasi_dd:0,realisasi_swadaya:0,realisasi_jumlah:0,realisasi_volume:0,realisasi_keterangan:''})
+const emptyKeg = () => ({sumber_dana:'DDS',kode_induk:'',kode_rekening:'',uraian_apbdes:'',uraian_detail:'',sdgs:'',prioritas:'',kategori:'',jenis_kegiatan_utama:'',jenis_kegiatan:'',sifat:'',cara:'',anggaran_apbdes:0,rencana_dd:0,rencana_swadaya:0,rencana_jumlah:0,rencana_satuan:'',rencana_volume:0,realisasi_dd:0,realisasi_swadaya:0,realisasi_jumlah:0,realisasi_volume:0,realisasi_pct_fisik:0,realisasi_keterangan:''})
 
 // ── ALERT ──
 function Alert({ok,text}) {
@@ -542,7 +542,7 @@ function FormKegiatan({initial, desaId, onSave, onClose}) {
             {rbox('% Realisasi Anggaran',pctAng+'%',pctColor(pctAng))}
             {fld('Jumlah Realisasi','realisasi_jumlah','number')}
             {fld('Volume Realisasi','realisasi_volume','number')}
-            {rbox('% Realisasi Fisik',f.rencana_volume>0?pctFis+'%':'—',pctColor(pctFis))}
+            {fld('% Realisasi Fisik','realisasi_pct_fisik','number')}
             <div style={{gridColumn:'1/-1'}}>
               <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>Keterangan</label>
               <textarea value={f.realisasi_keterangan} onChange={e=>s('realisasi_keterangan',e.target.value)} rows={2} style={{resize:'vertical'}}/>
