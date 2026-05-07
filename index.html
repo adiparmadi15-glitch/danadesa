@@ -542,7 +542,10 @@ function FormKegiatan({initial, desaId, onSave, onClose}) {
             {rbox('% Realisasi Anggaran',pctAng+'%',pctColor(pctAng))}
             {fld('Jumlah Realisasi','realisasi_jumlah','number')}
             {fld('Volume Realisasi','realisasi_volume','number')}
-            {fld('% Realisasi Fisik','realisasi_pct_fisik','number')}
+            <div>
+              <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>% Realisasi Fisik</label>
+              <input type="number" min={0} max={100} value={f.realisasi_pct_fisik||0} onChange={e=>s('realisasi_pct_fisik',Math.min(100,Math.max(0,Number(e.target.value)||0)))}/>
+            </div>
             <div style={{gridColumn:'1/-1'}}>
               <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>Keterangan</label>
               <textarea value={f.realisasi_keterangan} onChange={e=>s('realisasi_keterangan',e.target.value)} rows={2} style={{resize:'vertical'}}/>
@@ -660,7 +663,7 @@ function DesaPage({desaId, desaNama, user, onGantiDesa, onLogout}) {
                         const jList = JENIS_MAP[kg.kategori+'_'+kg.jenis_kegiatan_utama]||[]
                         const jLabel = jList.find(j=>String(j[0])===String(kg.jenis_kegiatan))
                         const pA = calcPct(kg.realisasi_dd,kg.rencana_dd)
-                        const pF = kg.rencana_volume>0 ? calcPct(kg.realisasi_volume,kg.rencana_volume) : null
+                        const pF = kg.realisasi_pct_fisik ?? null
                         return (
                           <tr key={kg.id}>
                             <td>{i+1}</td>
@@ -704,7 +707,7 @@ function DesaPage({desaId, desaNama, user, onGantiDesa, onLogout}) {
                 const jList = JENIS_MAP[kg.kategori+'_'+kg.jenis_kegiatan_utama]||[]
                 const jLabel = jList.find(j=>String(j[0])===String(kg.jenis_kegiatan))
                 const pA = calcPct(kg.realisasi_dd,kg.rencana_dd)
-                const pF = kg.rencana_volume>0 ? calcPct(kg.realisasi_volume,kg.rencana_volume) : null
+                const pF = kg.realisasi_pct_fisik ?? null
                 return (
                   <div key={kg.id} style={{marginBottom:12,padding:12,border:'1px solid #e5e7eb',borderRadius:10}}>
                     <div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8,marginBottom:6}}>
