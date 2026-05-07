@@ -291,8 +291,8 @@ function AdminPage({onLogout}) {
             <div className="card">
               <div className="sec-title">Tambah Desa Baru</div>
               <div className="grid2" style={{marginBottom:10}}>
-                <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Nama Desa</label><input value={dNama} onChange={e=>setDNama(e.target.value)} placeholder="Nama desa"/></div>
                 <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Kode Desa (10 digit)</label><input value={dKode} onChange={e=>setDKode(e.target.value.replace(/\D/g,''))} maxLength={10} placeholder="1234567890"/></div>
+                <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Nama Desa</label><input value={dNama} onChange={e=>setDNama(e.target.value)} placeholder="Nama desa"/></div>
                 <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Kecamatan</label><input value={dKec} onChange={e=>setDKec(e.target.value)} placeholder="Kecamatan"/></div>
                 <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Kabupaten/Kota</label><input value={dKab} onChange={e=>setDKab(e.target.value)} placeholder="Kabupaten/Kota"/></div>
                 <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Total Anggaran (Rp)</label><input type="number" value={dAng} onChange={e=>setDAng(e.target.value)} placeholder="1200000000"/></div>
@@ -306,12 +306,12 @@ function AdminPage({onLogout}) {
                desas.length===0 ? <div style={{textAlign:'center',padding:'2rem',color:'#9ca3af'}}>Belum ada desa</div> : (
                 <div style={{overflowX:'auto'}}>
                   <table>
-                    <thead><tr><th>Nama Desa</th><th>Kode</th><th>Kecamatan</th><th>Kabupaten</th><th>Anggaran</th><th>Aksi</th></tr></thead>
+                    <thead><tr><th>Kode</th><th>Nama Desa</th><th>Kecamatan</th><th>Kabupaten</th><th>Anggaran</th><th>Aksi</th></tr></thead>
                     <tbody>
-                      {desas.map(d => (
+                      {[...desas].sort((a,b)=>a.kode_desa.localeCompare(b.kode_desa)).map(d => (
                         <tr key={d.id}>
-                          <td style={{fontWeight:600}}>{d.nama}</td>
                           <td><code style={{fontSize:12,letterSpacing:1,background:'#f3f4f6',padding:'2px 6px',borderRadius:4}}>{d.kode_desa}</code></td>
+                          <td style={{fontWeight:600}}>{d.nama}</td>
                           <td style={{color:'#6b7280'}}>{d.kecamatan||'-'}</td>
                           <td style={{color:'#6b7280'}}>{d.kabupaten||'-'}</td>
                           <td>{fmtS(d.anggaran||0)}</td>
@@ -340,18 +340,18 @@ function AdminPage({onLogout}) {
             <div className="card">
               <div style={{overflowX:'auto'}}>
                 <table>
-                  <thead><tr><th>Desa</th><th>Kecamatan</th><th>Kabupaten</th><th>Anggaran</th></tr></thead>
+                  <thead><tr><th>Kode</th><th>Desa</th><th>Kecamatan</th><th>Kabupaten</th><th>Anggaran</th></tr></thead>
                   <tbody>
-                    {desas.map(d => (
+                    {[...desas].sort((a,b)=>a.kode_desa.localeCompare(b.kode_desa)).map(d => (
                       <tr key={d.id}>
+                        <td><code style={{fontSize:12,letterSpacing:1,background:'#f3f4f6',padding:'2px 6px',borderRadius:4}}>{d.kode_desa}</code></td>
                         <td style={{fontWeight:600}}>{d.nama}</td>
                         <td style={{color:'#6b7280'}}>{d.kecamatan||'-'}</td>
                         <td style={{color:'#6b7280'}}>{d.kabupaten||'-'}</td>
                         <td>{fmtS(d.anggaran||0)}</td>
                       </tr>
                     ))}
-                  </tbody>
-                </table>
+                  </tbody>                </table>
               </div>
             </div>
           </>
