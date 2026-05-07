@@ -226,8 +226,7 @@ function PilihDesaPage({user, onPilihDesa, onLogout}) {
 
   const logout = async () => { await sb.auth.signOut(); onLogout() }
 
-  const downloadKegiatan = () => {
-    const rows = kegiatan.map((kg,i) => ({
+  const downloadKegiatan = () => {    const rows = kegiatan.map((kg,i) => ({
       'No': i+1,
       'Sumber Dana': kg.sumber_dana||'',
       'Kode Induk/Sub Kegiatan': kg.kode_induk||'',
