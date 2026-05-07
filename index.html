@@ -215,6 +215,17 @@ function PilihDesaPage({user, onPilihDesa, onLogout}) {
     downloadExcel(rows, 'Data Desa')
   }
 
+  const showMsg = (ok,t) => { setMsg({ok,t}); setTimeout(()=>setMsg(null),3000) }
+
+  const hapus = async (id) => {
+    if (!confirm('Hapus kegiatan ini?')) return
+    const {error} = await sb.from('kegiatan').delete().eq('id',id)
+    if (error) showMsg(false,error.message)
+    else { showMsg(true,'Kegiatan dihapus'); loadAll() }
+  }
+
+  const logout = async () => { await sb.auth.signOut(); onLogout() }
+
   const downloadKegiatan = () => {
     const rows = kegiatan.map((kg,i) => ({
       'No': i+1,
@@ -653,16 +664,7 @@ function DesaPage({desaId, desaNama, user, onGantiDesa, onLogout}) {
     setLoading(false)
   }
 
-  const showMsg = (ok,t) => { setMsg({ok,t}); setTimeout(()=>setMsg(null),3000) }
-
-  const hapus = async (id) => {
-    if (!confirm('Hapus kegiatan ini?')) return
-    const {error} = await sb.from('kegiatan').delete().eq('id',id)
-    if (error) showMsg(false,error.message)
-    else { showMsg(true,'Kegiatan dihapus'); loadAll() }
   }
-
-  const logout = async () => { await sb.auth.signOut(); onLogout() }
 
   const totA = kegiatan.reduce((s,kg)=>s+(kg.rencana_dd||0),0)
   const totR = kegiatan.reduce((s,kg)=>s+(kg.realisasi_dd||0),0)
