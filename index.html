@@ -914,7 +914,7 @@ function App() {
   if (isPubik) return <PublikPage onBack={()=>setIsPublik(false)}/>
 
   // Belum login
-  if (authUser === null) return (
+  if (!authUser) return (
     <LoginPage onLogin={u => {
       if (u === 'publik') { setIsPublik(true); return }
       setAuthUser(u)
