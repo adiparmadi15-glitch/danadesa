@@ -884,32 +884,65 @@ function PublikPage({onBack}) {
 
 // ── APP UTAMA ──
 function App() {
-  const [user,setUser] = useState(undefined)
-  const [desaId,setDesaId] = useState(null)
-  const [desaNama,setDesaNama] = useState(null)
+  const [authUser, setAuthUser] = useState(undefined) // undefined=loading, null=tidak login, object=login
+  const [isPubik, setIsPublik] = useState(false)
+  const [desaId, setDesaId] = useState(null)
+  const [desaNama, setDesaNama] = useState(null)
 
   useEffect(() => {
-    sb.auth.getSession().then(({data:{session}}) => {
-      setUser(session?.user || null)
+    sb.auth.getSession().then(({data:{session}, error}) => {
+      setAuthUser(session?.user || null)
+    }).catch(() => {
+      setAuthUser(null)
     })
     const {data:{subscription}} = sb.auth.onAuthStateChange((_,session) => {
-      setUser(session?.user || null)
-      if (!session) { setDesaId(null); setDesaNama(null) }
+      setAuthUser(session?.user || null)
+      if (!session) { setDesaId(null); setDesaNama(null); setIsPublik(false) }
     })
     return () => subscription.unsubscribe()
   }, [])
 
   const handleLogout = async () => {
     await sb.auth.signOut()
-    setUser(null); setDesaId(null); setDesaNama(null)
+    setAuthUser(null); setDesaId(null); setDesaNama(null); setIsPublik(false)
   }
 
-  if (user === undefined) return <Loading/>
-  if (user === null) return <LoginPage onLogin={u => { if(u==='publik') setUser('publik'); else setUser(u) }}/>
-  if (user === 'publik') return <PublikPage onBack={()=>setUser(null)}/>
-  if (isAdmin(user)) return <AdminPage onLogout={handleLogout}/>
-  if (!desaId) return <PilihDesaPage user={user} onPilihDesa={(id,nama)=>{ setDesaId(id); setDesaNama(nama) }} onLogout={handleLogout}/>
-  return <DesaPage desaId={desaId} desaNama={desaNama} user={user} onGantiDesa={()=>{ setDesaId(null); setDesaNama(null) }} onLogout={handleLogout}/>
+  // Masih loading session
+  if (authUser === undefined) return <Loading/>
+
+  // Mode publik (tanpa login)
+  if (isPubik) return <PublikPage onBack={()=>setIsPublik(false)}/>
+
+  // Belum login
+  if (authUser === null) return (
+    <LoginPage onLogin={u => {
+      if (u === 'publik') { setIsPublik(true); return }
+      setAuthUser(u)
+    }}/>
+  )
+
+  // Login sebagai admin
+  if (isAdmin(authUser)) return <AdminPage onLogout={handleLogout}/>
+
+  // Login sebagai pendamping, belum pilih desa
+  if (!desaId) return (
+    <PilihDesaPage
+      user={authUser}
+      onPilihDesa={(id,nama) => { setDesaId(id); setDesaNama(nama) }}
+      onLogout={handleLogout}
+    />
+  )
+
+  // Login sebagai pendamping, sudah pilih desa
+  return (
+    <DesaPage
+      desaId={desaId}
+      desaNama={desaNama}
+      user={authUser}
+      onGantiDesa={() => { setDesaId(null); setDesaNama(null) }}
+      onLogout={handleLogout}
+    />
+  )
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>)
