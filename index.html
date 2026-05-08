@@ -45,8 +45,6 @@ td{padding:8px 10px;border-bottom:1px solid #f3f4f6;vertical-align:top}
 .badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500}
 @media(max-width:600px){.grid2,.grid3{grid-template-columns:1fr}}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <script>
@@ -69,20 +67,6 @@ const JENIS_MAP={"1_sarpras":[[1,"Jalan Usaha Tani"],[2,"Embung"],[3,"Sarpras Pe
 const SATUAN_MAP={1:"meter",2:"m³",3:"unit",4:"meter",5:"unit",6:"meter",7:"m²",8:"m²",9:"m²",10:"unit",11:"m²",12:"m²",13:"m²",14:"m²",15:"meter",16:"meter",17:"unit",18:"unit",19:"meter",20:"unit",21:"Paket",22:"Paket",23:"Paket",24:"OK",25:"OK",26:"OK",27:"OK",28:"meter",29:"unit",30:"unit",31:"unit",32:"m²",33:"unit",34:"m²",35:"unit",36:"m²",37:"unit",38:"m²",39:"unit",40:"m²",41:"unit",42:"m²",43:"meter",44:"meter",45:"unit",46:"unit",47:"meter",48:"unit",49:"OK",50:"OB",51:"OB",52:"OB",53:"Kali",54:"Kali",55:"Bulan",56:"Kali",57:"OK",58:"Kali",59:"OB",60:"OK",61:"Kali",62:"Kali",63:"OK",64:"OB",65:"OK",66:"meter",67:"meter",68:"meter",69:"meter",70:"meter",71:"meter",72:"meter",73:"meter",74:"meter",75:"meter",76:"m³",77:"unit",78:"m²",79:"unit",80:"m²",81:"m²",82:"unit",83:"m²",84:"unit",85:"m²",86:"m²",87:"unit",88:"unit",89:"unit",90:"unit",91:"unit",92:"m²",93:"unit",94:"OK",95:"Paket",96:"OK",97:"OK",98:"Unit",99:"Unit",100:"Paket",101:"OK",102:"OK",103:"OK",104:"OK",105:"OK",106:"OK",107:"OK",108:"OK",109:"OK",110:"OK",111:"OK",112:"OK",113:"OK",114:"OK",115:"OK",116:"OK",117:"OK",118:"Kali",119:"Paket",120:"Paket",121:"Paket",122:"Paket",123:"OK",124:"KPM/Bulan",125:"Paket",126:"Paket",127:"Paket"}
 
 const fmtS = n => `Rp ${Math.round(n||0).toLocaleString('id-ID')}`
-
-const downloadExcel = (rows, filename) => {
-  const ws = XLSX.utils.json_to_sheet(rows)
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'Data')
-  XLSX.writeFile(wb, filename+'.xlsx')
-}
-
-const getLabelSdgs    = v => { const f=SDGS.find(x=>String(x[0])===String(v)); return f?f[0]+'. '+f[1]:v||'' }
-const getLabelPrioritas = v => { const f=PRIORITAS.find(x=>String(x[0])===String(v)); return f?f[0]+'. '+f[1]:v||'' }
-const getLabelKategori  = v => { const f=KATEGORI.find(x=>String(x[0])===String(v)); return f?f[0]+'. '+f[1]:v||'' }
-const getLabelSifat     = v => { const f=SIFAT.find(x=>String(x[0])===String(v)); return f?f[0]+'. '+f[1]:v||'' }
-const getLabelCara      = v => { const f=CARA.find(x=>String(x[0])===String(v)); return f?f[0]+'. '+f[1]:v||'' }
-const getLabelJenis     = (kat,jut,jk) => { const list=JENIS_MAP[kat+'_'+jut]||[]; const f=list.find(x=>String(x[0])===String(jk)); return f?f[0]+'. '+f[1]:jk||'' }
 const calcPct = (a,b) => b>0?Math.round((a/b)*100):0
 const pctColor = p => p>=80?'#166534':p>=50?'#92400e':'#991b1b'
 const emptyKeg = () => ({sumber_dana:'DDS',kode_induk:'',kode_rekening:'',uraian_apbdes:'',uraian_detail:'',sdgs:'',prioritas:'',kategori:'',jenis_kegiatan_utama:'',jenis_kegiatan:'',sifat:'',cara:'',anggaran_apbdes:0,rencana_dd:0,rencana_swadaya:0,rencana_jumlah:0,rencana_satuan:'',rencana_volume:0,realisasi_dd:0,realisasi_swadaya:0,realisasi_jumlah:0,realisasi_volume:0,realisasi_pct_fisik:0,realisasi_keterangan:''})
@@ -205,61 +189,6 @@ function PilihDesaPage({user, onPilihDesa, onLogout}) {
     setLoading(false)
   }
 
-  const downloadDesa = () => {
-    const rows = [...desas].sort((a,b)=>a.kode_desa.localeCompare(b.kode_desa)).map(d => ({
-      'Kode Desa': d.kode_desa,
-      'Nama Desa': d.nama,
-      'Kecamatan': d.kecamatan||'',
-      'Kabupaten/Kota': d.kabupaten||'',
-      'Total Anggaran (Rp)': d.anggaran||0,
-    }))
-    downloadExcel(rows, 'Data Desa')
-  }
-
-  const showMsg = (ok,t) => { setMsg({ok,t}); setTimeout(()=>setMsg(null),3000) }
-
-  const hapus = async (id) => {
-    if (!confirm('Hapus kegiatan ini?')) return
-    const {error} = await sb.from('kegiatan').delete().eq('id',id)
-    if (error) showMsg(false,error.message)
-    else { showMsg(true,'Kegiatan dihapus'); loadAll() }
-  }
-
-  const logout = async () => { await sb.auth.signOut(); onLogout() }
-
-  const downloadKegiatan = () => {    const rows = kegiatan.map((kg,i) => ({
-      'No': i+1,
-      'Sumber Dana': kg.sumber_dana||'',
-      'Kode Induk/Sub Kegiatan': kg.kode_induk||'',
-      'Kode Rekening': kg.kode_rekening||'',
-      'Uraian APBDes': kg.uraian_apbdes||'',
-      'Uraian Detail Kegiatan': kg.uraian_detail||'',
-      'Tagging SDGs': getLabelSdgs(kg.sdgs),
-      'Tagging Prioritas': getLabelPrioritas(kg.prioritas),
-      'Kategori Kegiatan': getLabelKategori(kg.kategori),
-      'Kegiatan': kg.jenis_kegiatan_utama==='sarpras'?'Sarpras':'Non Sarpras',
-      'Jenis Kegiatan': getLabelJenis(kg.kategori,kg.jenis_kegiatan_utama,kg.jenis_kegiatan),
-      'Sifat Pengadaan': getLabelSifat(kg.sifat),
-      'Cara Pengadaan': getLabelCara(kg.cara),
-      'Anggaran APBDes (Rp)': kg.anggaran_apbdes||0,
-      'Anggaran Dana Desa (Rp)': kg.rencana_dd||0,
-      'Anggaran Swadaya (Rp)': kg.rencana_swadaya||0,
-      'Total Anggaran (Rp)': (kg.rencana_dd||0)+(kg.rencana_swadaya||0),
-      'Jumlah Kegiatan': kg.rencana_jumlah||0,
-      'Satuan Kegiatan': kg.rencana_satuan||'',
-      'Volume Kegiatan': kg.rencana_volume||0,
-      'Realisasi Dana Desa (Rp)': kg.realisasi_dd||0,
-      'Realisasi Swadaya (Rp)': kg.realisasi_swadaya||0,
-      'Total Realisasi (Rp)': (kg.realisasi_dd||0)+(kg.realisasi_swadaya||0),
-      '% Realisasi Anggaran': calcPct(kg.realisasi_dd,kg.rencana_dd)+'%',
-      'Jumlah Realisasi': kg.realisasi_jumlah||0,
-      'Volume Realisasi': kg.realisasi_volume||0,
-      '% Realisasi Fisik': (kg.realisasi_pct_fisik||0)+'%',
-      'Keterangan': kg.realisasi_keterangan||'',
-    }))
-    downloadExcel(rows, 'Data Kegiatan - Desa '+desaNama)
-  }
-
   const logout = async () => { await sb.auth.signOut(); onLogout() }
 
   return (
@@ -346,10 +275,7 @@ function AdminPage({onLogout}) {
             <h1 style={{fontSize:18,fontWeight:700,color:'#166534',margin:0}}>⚙️ Panel Admin</h1>
             <p style={{fontSize:12,color:'#6b7280',margin:0}}>{desas.length} desa terdaftar</p>
           </div>
-          <div style={{display:'flex',gap:8}}>
-            <button onClick={downloadDesa} style={{fontSize:13,padding:'7px 16px',borderRadius:8,border:'1px solid #16a34a',background:'#f0fdf4',color:'#166534',fontWeight:500}}>⬇ Download Data</button>
-            <button onClick={logout} className="btn-outline" style={{fontSize:13}}>Keluar</button>
-          </div>
+          <button onClick={logout} className="btn-outline" style={{fontSize:13}}>Keluar</button>
         </div>
 
         <div className="tab-bar">
@@ -664,7 +590,16 @@ function DesaPage({desaId, desaNama, user, onGantiDesa, onLogout}) {
     setLoading(false)
   }
 
+  const showMsg = (ok,t) => { setMsg({ok,t}); setTimeout(()=>setMsg(null),3000) }
+
+  const hapus = async (id) => {
+    if (!confirm('Hapus kegiatan ini?')) return
+    const {error} = await sb.from('kegiatan').delete().eq('id',id)
+    if (error) showMsg(false,error.message)
+    else { showMsg(true,'Kegiatan dihapus'); loadAll() }
   }
+
+  const logout = async () => { await sb.auth.signOut(); onLogout() }
 
   const totA = kegiatan.reduce((s,kg)=>s+(kg.rencana_dd||0),0)
   const totR = kegiatan.reduce((s,kg)=>s+(kg.realisasi_dd||0),0)
@@ -688,8 +623,7 @@ function DesaPage({desaId, desaNama, user, onGantiDesa, onLogout}) {
               {desaInfo?.kecamatan&&`${desaInfo.kecamatan} · `}{desaInfo?.kabupaten} · Pendamping: <b>{username}</b>
             </p>
           </div>
-          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-            <button onClick={downloadKegiatan} style={{fontSize:13,padding:'7px 16px',borderRadius:8,border:'1px solid #16a34a',background:'#f0fdf4',color:'#166534',fontWeight:500}}>⬇ Download Data</button>
+          <div style={{display:'flex',gap:8}}>
             <button onClick={onGantiDesa} className="btn-outline" style={{fontSize:13}}>🔄 Ganti Desa</button>
             <button onClick={logout} className="btn-outline" style={{fontSize:13}}>Keluar</button>
           </div>
@@ -886,65 +820,32 @@ function PublikPage({onBack}) {
 
 // ── APP UTAMA ──
 function App() {
-  const [authUser, setAuthUser] = useState(undefined) // undefined=loading, null=tidak login, object=login
-  const [isPubik, setIsPublik] = useState(false)
-  const [desaId, setDesaId] = useState(null)
-  const [desaNama, setDesaNama] = useState(null)
+  const [user,setUser] = useState(undefined)
+  const [desaId,setDesaId] = useState(null)
+  const [desaNama,setDesaNama] = useState(null)
 
   useEffect(() => {
-    sb.auth.getSession().then(({data:{session}, error}) => {
-      setAuthUser(session?.user || null)
-    }).catch(() => {
-      setAuthUser(null)
+    sb.auth.getSession().then(({data:{session}}) => {
+      setUser(session?.user || null)
     })
     const {data:{subscription}} = sb.auth.onAuthStateChange((_,session) => {
-      setAuthUser(session?.user || null)
-      if (!session) { setDesaId(null); setDesaNama(null); setIsPublik(false) }
+      setUser(session?.user || null)
+      if (!session) { setDesaId(null); setDesaNama(null) }
     })
     return () => subscription.unsubscribe()
   }, [])
 
   const handleLogout = async () => {
     await sb.auth.signOut()
-    setAuthUser(null); setDesaId(null); setDesaNama(null); setIsPublik(false)
+    setUser(null); setDesaId(null); setDesaNama(null)
   }
 
-  // Masih loading session
-  if (authUser === undefined) return <Loading/>
-
-  // Mode publik (tanpa login)
-  if (isPubik) return <PublikPage onBack={()=>setIsPublik(false)}/>
-
-  // Belum login
-  if (!authUser) return (
-    <LoginPage onLogin={u => {
-      if (u === 'publik') { setIsPublik(true); return }
-      setAuthUser(u)
-    }}/>
-  )
-
-  // Login sebagai admin
-  if (isAdmin(authUser)) return <AdminPage onLogout={handleLogout}/>
-
-  // Login sebagai pendamping, belum pilih desa
-  if (!desaId) return (
-    <PilihDesaPage
-      user={authUser}
-      onPilihDesa={(id,nama) => { setDesaId(id); setDesaNama(nama) }}
-      onLogout={handleLogout}
-    />
-  )
-
-  // Login sebagai pendamping, sudah pilih desa
-  return (
-    <DesaPage
-      desaId={desaId}
-      desaNama={desaNama}
-      user={authUser}
-      onGantiDesa={() => { setDesaId(null); setDesaNama(null) }}
-      onLogout={handleLogout}
-    />
-  )
+  if (user === undefined) return <Loading/>
+  if (user === null) return <LoginPage onLogin={u => { if(u==='publik') setUser('publik'); else setUser(u) }}/>
+  if (user === 'publik') return <PublikPage onBack={()=>setUser(null)}/>
+  if (isAdmin(user)) return <AdminPage onLogout={handleLogout}/>
+  if (!desaId) return <PilihDesaPage user={user} onPilihDesa={(id,nama)=>{ setDesaId(id); setDesaNama(nama) }} onLogout={handleLogout}/>
+  return <DesaPage desaId={desaId} desaNama={desaNama} user={user} onGantiDesa={()=>{ setDesaId(null); setDesaNama(null) }} onLogout={handleLogout}/>
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>)
