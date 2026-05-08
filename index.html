@@ -1,854 +1,2823 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistem Dana Desa</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-body{background:#f0fdf4;min-height:100vh}
-input,select,textarea,button{font-family:inherit;font-size:13px}
-input,select,textarea{width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;outline:none}
-input:focus,select:focus,textarea:focus{border-color:#16a34a;box-shadow:0 0 0 2px #bbf7d0}
-button{cursor:pointer;border-radius:8px;border:none;padding:8px 16px}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{font-size:11px;font-weight:600;color:#6b7280;padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:left;white-space:nowrap;background:#f9fafb}
-td{padding:8px 10px;border-bottom:1px solid #f3f4f6;vertical-align:top}
-.card{background:white;border-radius:12px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
-.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1rem}
-.metric{background:white;border-radius:10px;padding:12px 14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
-.metric-label{font-size:11px;color:#6b7280;margin-bottom:4px}
-.metric-value{font-size:17px;font-weight:700}
-.sec-title{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
-.sec-box{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:10px}
-.read-box{padding:8px 10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:13px;font-weight:600;color:#1d4ed8}
-.tab-bar{display:flex;gap:8px;margin-bottom:1rem;border-bottom:1px solid #e5e7eb;padding-bottom:8px;flex-wrap:wrap}
-.tab-btn{font-size:13px;padding:6px 16px;border-radius:20px;border:1px solid #d1d5db;background:white;color:#6b7280}
-.tab-btn.active{border-color:#16a34a;background:#dcfce7;color:#166534;font-weight:600}
-.btn-green{background:#16a34a;color:white;font-weight:600}
-.btn-green:hover{background:#15803d}
-.btn-outline{background:white;border:1px solid #d1d5db;color:#374151}
-.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:1rem}
-.alert-ok{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
-.alert-err{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
-.modal-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto}
-.modal{background:white;border-radius:16px;padding:1.5rem;width:100%;max-width:680px;margin:auto}
-.wrap{max-width:1000px;margin:0 auto;padding:1rem}
-.bar-wrap{display:flex;align-items:center;gap:6px}
-.bar-bg{flex:1;height:6px;background:#e5e7eb;border-radius:3px;min-width:40px}
-.bar-fill{height:6px;border-radius:3px}
-.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500}
-@media(max-width:600px){.grid2,.grid3{grid-template-columns:1fr}}
-</style>
-</head>
-<body>
-<script>
-const SUPABASE_URL = 'https://hyzysbjtrbmquvxzhyyq.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5enlzYmp0cmJtcXV2eHpoeXlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MTY1NDEsImV4cCI6MjA5MzI5MjU0MX0.lUGfRlijr_DRZWjTm5h3SvZxnOQVfT_K3fO_GL2f1yg'
-</script>
-<div id="root"></div>
-<script type="text/babel">
-const { useState, useEffect } = React
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-const isAdmin = (user) => user?.user_metadata?.role === 'admin'
-
-// ── DATA MASTER ──
-const SDGS=[[1,"Desa tanpa Kemiskinan"],[2,"Desa tanpa Kelaparan"],[3,"Desa Sehat dan Sejahtera"],[4,"Pendidikan desa berkualitas"],[5,"Keterlibatan Perempuan Desa"],[6,"Desa layak air bersih dan sanitasi"],[7,"Desa berenergi bersih dan terbarukan"],[8,"Pertumbuhan ekonomi desa merata"],[9,"Infrastruktur dan inovasi desa sesuai kebutuhan"],[10,"Desa tanpa kesenjangan"],[11,"Kawasan permukiman desa aman dan nyaman"],[12,"Konsumsi dan produksi desa sadar lingkungan"],[13,"Desa tanggap perubahan iklim"],[14,"Desa peduli lingkungan laut"],[15,"Desa peduli lingkungan darat"],[16,"Desa damai berkeadilan"],[17,"Kemitraan untuk pembangunan desa"]]
-const PRIORITAS=[[1,"Stunting"],[2,"Ketahanan Pangan"],[3,"Pengentasan Kemiskinan"],[4,"BUMDes"],[5,"SDM"],[6,"Layanan dasar kesehatan"],[7,"Infrastruktur"],[8,"Potensi dan keunggulan desa"],[9,"Perubahan Iklim"],[10,"Bencana"],[11,"Desa Digital"],[12,"Prioritas Lainnya"],[13,"Bukan prioritas"]]
-const KATEGORI=[[1,"Ketahanan Pangan"],[2,"Stunting"],[3,"Sarpras umum"],[4,"PEL (Pengembangan Ekonomi Lokal)"],[5,"BUMDES/BUMDESMA"],[6,"Non Sarpras Umum"],[7,"Pendataan SDGs"],[8,"BLT Desa"],[9,"3% DOP"]]
-const SIFAT=[[1,"Pembangunan"],[2,"Rehabilitasi"],[3,"Peningkatan"],[4,"Pemeliharaan"],[5,"Pengadaan"]]
-const CARA=[[1,"Swakelola"],[2,"Pihak Ketiga"],[3,"Kerjasama"]]
-const JENIS_MAP={"1_sarpras":[[1,"Jalan Usaha Tani"],[2,"Embung"],[3,"Sarpras Pendukung Embung"],[4,"Bendung Sederhana"],[5,"Bangunan Irigasi"],[6,"Saluran Irigasi"],[7,"Tempat Penjemuran Tanaman Pangan"],[8,"Lumbung Pangan"],[9,"PKTD Pertanian dan perkebunan"],[10,"PKTD Perdagangan Logistik dan Pangan"],[11,"PKTD Perikanan"],[12,"PKTD Peternakan"],[13,"PKTD Industri Pengelolahan"],[14,"PKTD Perhutanan"],[15,"Jembatan Roda 4"],[16,"Jembatan Roda 2"],[17,"Sumur"],[18,"Instalasi Pompa Hidram"],[19,"Perpipaan"],[20,"Sarpras Lainnya"]],"1_non_sarpras":[[21,"Bantuan pangan hewani"],[22,"Bantuan pangan ikan"],[23,"Bantuan pangan nabati"],[24,"Pelatihan Perikanan"],[25,"Pelatihan Pertanian/Perkebunan"],[26,"Pelatihan Peternakan"],[27,"Pelatihan Tata Boga"]],"2_sarpras":[[28,"Saluran Drainase"],[29,"Bangunan Air Bersih"],[30,"Instalasi Penjernihan Air"],[31,"Penampungan Air Hujan (PAH)"],[32,"MCK"],[33,"Jamban Keluarga"],[34,"Gedung Sekolah TK/PAUD"],[35,"Sarpras Pendukung TK/PAUD"],[36,"Polindes"],[37,"Sarpras Pendukung Polindes"],[38,"Posyandu"],[39,"Sarpras Pendukung Posyandu"],[40,"Bak/Tong Sampah"],[41,"Tempat Pengolahan Sampah"],[42,"Tempat Pembuangan Sampah"],[43,"Jembatan Roda 4"],[44,"Jembatan Roda 2"],[45,"Sumur"],[46,"Instalasi Pompa Hidram"],[47,"Perpipaan"],[48,"Sarpras Lainnya"]],"2_non_sarpras":[[49,"Diklat Kader Kesehatan"],[50,"Insentif KPM"],[51,"Insentif Kader Kesehatan"],[52,"Insentif Kader Posyandu"],[53,"Konseling gizi di Posyandu"],[54,"Operasional Rembuk Stunting"],[55,"Operasional Posyandu"],[56,"Pelayanan Posyandu"],[57,"Pemberian Makanan Tambahan"],[58,"Sosialisasi Pencegahan Perkawinan Anak"],[59,"Operasional eHDW"],[60,"Pelatihan Kesehatan/Stunting"],[61,"Rapat Evaluasi PPS"],[62,"Sosialisasi Kesehatan/PPS"],[63,"Diklat Guru PAUD/TPA"],[64,"Honor Guru PAUD/TPA"],[65,"Pelatihan E HDW"]],"3_sarpras":[[66,"Jalan Poros Desa"],[67,"Jalan Poros Dusun"],[68,"Jalan Lingkungan"],[69,"Jalan Setapak"],[70,"Jembatan Gantung"],[71,"Gorong-gorong"],[72,"Tembok Penahan Tanah"],[73,"Bronjong"],[74,"Krib Pengarah"],[75,"Tambatan Perahu"],[76,"Gedung Perpustakaan"],[77,"Sarpras Pendukung Perpustakaan"],[78,"Bangunan Olahraga"],[79,"Sarpras Pendukung Olahraga"],[80,"Taman bermain/RTH"],[81,"Pasar"],[82,"Sarpras Pendukung Pasar"],[83,"Bangunan Utama Wisata"],[84,"Sarpras Pendukung Pariwisata"],[85,"Gedung BUMDES"],[86,"Balai Kemasyarakatan"],[87,"Jaringan Internet"],[88,"Listrik Desa"],[89,"PJU/Bantuan Listrik RT"],[90,"Pangkalan Ojek"],[91,"Sumur Resapan/Biofori"],[92,"PKTD Restoran dan Wisata"],[93,"PKTD Prasarana Umum"],[94,"PKTD Lain lain"]],"4_non_sarpras":[[95,"Pelatihan Pengurus Bumdes"],[96,"Pembentukan Badan Usaha"],[97,"Diklat ekonomi"],[98,"Pelatihan Ekonomi/Wirausaha"],[99,"Penyertaan Modal Bumdes"]],"5_non_sarpras":[[95,"Pelatihan Pengurus Bumdes"],[96,"Pembentukan Badan Usaha"],[97,"Diklat ekonomi"],[98,"Pelatihan Ekonomi/Wirausaha"],[99,"Penyertaan Modal Bumdes"]],"6_sarpras":[[100,"Perbaikan Rumah Tinggal"]],"6_non_sarpras":[[101,"Bantuan untuk kaum Difabel"],[102,"Diklat Agama/Sosbudling"],[103,"Pelatihan Aparatur Desa"],[104,"Pelatihan Elektronika"],[105,"Pelatihan Industri kreatif"],[106,"Pelatihan Kelembagaan"],[107,"Pelatihan Komputer"],[108,"Pelatihan Otomotif"],[109,"Pelatihan Sosbud"],[110,"Pelatihan Tata Busana"],[111,"Pelatihan Tata Rias"],[112,"Pelatihan Teknologi Tepat Guna"],[113,"Pembinaan/Penyuluhan"],[114,"Penanganan Bencana Alam"],[115,"Penanganan Bencana Non Alam"],[116,"Pendataan/Pemetaan Potensi Desa"],[117,"Rehabilitasi Ketergantungan obat"],[118,"Penanggulangan TBC"],[119,"Lain lain"]],"7_non_sarpras":[[120,"Bimtek Pendataan SDGs"],[121,"Honor Admin"],[122,"Honor Enumerator"],[123,"Operasional Pemutakhiran Data"]],"8_non_sarpras":[[124,"BLT Desa"]],"9_non_sarpras":[[125,"Koordinasi Pemerintah Desa"],[126,"Kegiatan penanggulangan kerawanan sosial"],[127,"Kegiatan lainnya mendukung tugas Pemerintah Desa"]]}
-const SATUAN_MAP={1:"meter",2:"m³",3:"unit",4:"meter",5:"unit",6:"meter",7:"m²",8:"m²",9:"m²",10:"unit",11:"m²",12:"m²",13:"m²",14:"m²",15:"meter",16:"meter",17:"unit",18:"unit",19:"meter",20:"unit",21:"Paket",22:"Paket",23:"Paket",24:"OK",25:"OK",26:"OK",27:"OK",28:"meter",29:"unit",30:"unit",31:"unit",32:"m²",33:"unit",34:"m²",35:"unit",36:"m²",37:"unit",38:"m²",39:"unit",40:"m²",41:"unit",42:"m²",43:"meter",44:"meter",45:"unit",46:"unit",47:"meter",48:"unit",49:"OK",50:"OB",51:"OB",52:"OB",53:"Kali",54:"Kali",55:"Bulan",56:"Kali",57:"OK",58:"Kali",59:"OB",60:"OK",61:"Kali",62:"Kali",63:"OK",64:"OB",65:"OK",66:"meter",67:"meter",68:"meter",69:"meter",70:"meter",71:"meter",72:"meter",73:"meter",74:"meter",75:"meter",76:"m³",77:"unit",78:"m²",79:"unit",80:"m²",81:"m²",82:"unit",83:"m²",84:"unit",85:"m²",86:"m²",87:"unit",88:"unit",89:"unit",90:"unit",91:"unit",92:"m²",93:"unit",94:"OK",95:"Paket",96:"OK",97:"OK",98:"Unit",99:"Unit",100:"Paket",101:"OK",102:"OK",103:"OK",104:"OK",105:"OK",106:"OK",107:"OK",108:"OK",109:"OK",110:"OK",111:"OK",112:"OK",113:"OK",114:"OK",115:"OK",116:"OK",117:"OK",118:"Kali",119:"Paket",120:"Paket",121:"Paket",122:"Paket",123:"OK",124:"KPM/Bulan",125:"Paket",126:"Paket",127:"Paket"}
-
-const fmtS = n => `Rp ${Math.round(n||0).toLocaleString('id-ID')}`
-const calcPct = (a,b) => b>0?Math.round((a/b)*100):0
-const pctColor = p => p>=80?'#166534':p>=50?'#92400e':'#991b1b'
-const emptyKeg = () => ({sumber_dana:'DDS',kode_induk:'',kode_rekening:'',uraian_apbdes:'',uraian_detail:'',sdgs:'',prioritas:'',kategori:'',jenis_kegiatan_utama:'',jenis_kegiatan:'',sifat:'',cara:'',anggaran_apbdes:0,rencana_dd:0,rencana_swadaya:0,rencana_jumlah:0,rencana_satuan:'',rencana_volume:0,realisasi_dd:0,realisasi_swadaya:0,realisasi_jumlah:0,realisasi_volume:0,realisasi_pct_fisik:0,realisasi_keterangan:''})
-
-// ── ALERT ──
-function Alert({ok,text}) {
-  if (!text) return null
-  return <div className={`alert ${ok?'alert-ok':'alert-err'}`}>{ok?'✅':'⚠️'} {text}</div>
-}
-
-// ── BAR ──
-function Bar({p}) {
-  return (
-    <div className="bar-wrap">
-      <div className="bar-bg"><div className="bar-fill" style={{width:Math.min(p,100)+'%',background:pctColor(p)}}/></div>
-      <span style={{fontSize:11,minWidth:28,color:pctColor(p),fontWeight:600}}>{p}%</span>
-    </div>
-  )
-}
-
-// ── LOADING ──
-function Loading() {
-  return (
-    <div style={{minHeight:'100vh',background:'#f0fdf4',display:'flex',alignItems:'center',justifyContent:'center'}}>
-      <div style={{fontSize:14,color:'#6b7280'}}>Memuat...</div>
-    </div>
-  )
-}
-
-// ── LOGIN PAGE ──
-function LoginPage({onLogin}) {
-  const [mode,setMode] = useState('pendamping')
-  const [username,setUsername] = useState('')
-  const [email,setEmail] = useState('')
-  const [password,setPassword] = useState('')
-  const [err,setErr] = useState('')
-  const [loading,setLoading] = useState(false)
-
-  const login = async () => {
-    setErr(''); setLoading(true)
-    try {
-      let loginEmail = ''
-      if (mode==='admin') {
-        if (!email.trim()) { setErr('Email wajib diisi'); setLoading(false); return }
-        loginEmail = email.trim()
-      } else {
-        if (!username || username.length!==16) { setErr('Username harus 16 digit angka'); setLoading(false); return }
-        loginEmail = username+'@danadesa.id'
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistem Dana Desa</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
-      if (!password) { setErr('Password wajib diisi'); setLoading(false); return }
-      const {data,error} = await sb.auth.signInWithPassword({email:loginEmail, password})
-      if (error || !data.user) { setErr('Email/username atau password salah'); setLoading(false); return }
-      if (mode==='admin' && !isAdmin(data.user)) { await sb.auth.signOut(); setErr('Akun ini tidak punya akses admin'); setLoading(false); return }
-      if (mode==='pendamping' && isAdmin(data.user)) { await sb.auth.signOut(); setErr('Gunakan tab Admin untuk akun ini'); setLoading(false); return }
-      onLogin(data.user)
-    } catch(e) {
-      setErr('Terjadi kesalahan, coba lagi')
-    }
-    setLoading(false)
-  }
+      body {
+        background: #f0fdf4;
+        min-height: 100vh;
+      }
+      input,
+      select,
+      textarea,
+      button {
+        font-family: inherit;
+        font-size: 13px;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        outline: none;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: #16a34a;
+        box-shadow: 0 0 0 2px #bbf7d0;
+      }
+      button {
+        cursor: pointer;
+        border-radius: 8px;
+        border: none;
+        padding: 8px 16px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      th {
+        font-size: 11px;
+        font-weight: 600;
+        color: #6b7280;
+        padding: 8px 10px;
+        border-bottom: 1px solid #e5e7eb;
+        text-align: left;
+        white-space: nowrap;
+        background: #f9fafb;
+      }
+      td {
+        padding: 8px 10px;
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: top;
+      }
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 10px;
+      }
+      .grid3 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 10px;
+        margin-bottom: 1rem;
+      }
+      .metric {
+        background: white;
+        border-radius: 10px;
+        padding: 12px 14px;
+        text-align: center;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+      }
+      .metric-label {
+        font-size: 11px;
+        color: #6b7280;
+        margin-bottom: 4px;
+      }
+      .metric-value {
+        font-size: 17px;
+        font-weight: 700;
+      }
+      .sec-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 10px;
+      }
+      .sec-box {
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+      }
+      .read-box {
+        padding: 8px 10px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #1d4ed8;
+      }
+      .tab-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 8px;
+        flex-wrap: wrap;
+      }
+      .tab-btn {
+        font-size: 13px;
+        padding: 6px 16px;
+        border-radius: 20px;
+        border: 1px solid #d1d5db;
+        background: white;
+        color: #6b7280;
+      }
+      .tab-btn.active {
+        border-color: #16a34a;
+        background: #dcfce7;
+        color: #166534;
+        font-weight: 600;
+      }
+      .btn-green {
+        background: #16a34a;
+        color: white;
+        font-weight: 600;
+      }
+      .btn-green:hover {
+        background: #15803d;
+      }
+      .btn-outline {
+        background: white;
+        border: 1px solid #d1d5db;
+        color: #374151;
+      }
+      .alert {
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        margin-bottom: 1rem;
+      }
+      .alert-ok {
+        background: #f0fdf4;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+      }
+      .alert-err {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+      }
+      .modal-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 1000;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 1rem;
+        overflow-y: auto;
+      }
+      .modal {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        width: 100%;
+        max-width: 680px;
+        margin: auto;
+      }
+      .wrap {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+      .bar-wrap {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .bar-bg {
+        flex: 1;
+        height: 6px;
+        background: #e5e7eb;
+        border-radius: 3px;
+        min-width: 40px;
+      }
+      .bar-fill {
+        height: 6px;
+        border-radius: 3px;
+      }
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      @media (max-width: 600px) {
+        .grid2,
+        .grid3 {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  </head>
+  <body>
+    <script>
+      const SUPABASE_URL = "https://hyzysbjtrbmquvxzhyyq.supabase.co";
+      const SUPABASE_ANON_KEY =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5enlzYmp0cmJtcXV2eHpoeXlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MTY1NDEsImV4cCI6MjA5MzI5MjU0MX0.lUGfRlijr_DRZWjTm5h3SvZxnOQVfT_K3fO_GL2f1yg";
+    </script>
+    <div id="root"></div>
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+      const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const isAdmin = (user) => user?.user_metadata?.role === "admin";
 
-  return (
-    <div style={{minHeight:'100vh',background:'#f0fdf4',display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}}>
-      <div className="card" style={{width:'100%',maxWidth:400}}>
-        <div style={{textAlign:'center',marginBottom:'1.5rem'}}>
-          <div style={{fontSize:40,marginBottom:8}}>🏡</div>
-          <h1 style={{fontSize:22,fontWeight:700,color:'#166534'}}>Sistem Dana Desa</h1>
-          <p style={{fontSize:13,color:'#6b7280',marginTop:4}}>Transparansi penggunaan anggaran desa</p>
-        </div>
-        <div style={{display:'flex',background:'#f3f4f6',borderRadius:10,padding:4,marginBottom:'1.5rem'}}>
-          {[['pendamping','👤 Pendamping'],['admin','⚙️ Admin']].map(([m,l]) => (
-            <button key={m} onClick={()=>{setMode(m);setErr('')}}
-              style={{flex:1,padding:8,fontSize:12,border:'none',borderRadius:8,background:mode===m?'white':'transparent',color:mode===m?'#166534':'#6b7280',fontWeight:mode===m?600:400,boxShadow:mode===m?'0 1px 4px rgba(0,0,0,0.1)':'none'}}>
-              {l}
-            </button>
-          ))}
-        </div>
-        {mode==='admin' ? (
-          <div style={{marginBottom:10}}>
-            <label style={{fontSize:13,color:'#374151',fontWeight:500,display:'block',marginBottom:6}}>Email Admin</label>
-            <input type="email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()} placeholder="admin@danadesa.id"/>
+      // ── DATA MASTER ──
+      const SDGS = [
+        [1, "Desa tanpa Kemiskinan"],
+        [2, "Desa tanpa Kelaparan"],
+        [3, "Desa Sehat dan Sejahtera"],
+        [4, "Pendidikan desa berkualitas"],
+        [5, "Keterlibatan Perempuan Desa"],
+        [6, "Desa layak air bersih dan sanitasi"],
+        [7, "Desa berenergi bersih dan terbarukan"],
+        [8, "Pertumbuhan ekonomi desa merata"],
+        [9, "Infrastruktur dan inovasi desa sesuai kebutuhan"],
+        [10, "Desa tanpa kesenjangan"],
+        [11, "Kawasan permukiman desa aman dan nyaman"],
+        [12, "Konsumsi dan produksi desa sadar lingkungan"],
+        [13, "Desa tanggap perubahan iklim"],
+        [14, "Desa peduli lingkungan laut"],
+        [15, "Desa peduli lingkungan darat"],
+        [16, "Desa damai berkeadilan"],
+        [17, "Kemitraan untuk pembangunan desa"],
+      ];
+      const PRIORITAS = [
+        [1, "Stunting"],
+        [2, "Ketahanan Pangan"],
+        [3, "Pengentasan Kemiskinan"],
+        [4, "BUMDes"],
+        [5, "SDM"],
+        [6, "Layanan dasar kesehatan"],
+        [7, "Infrastruktur"],
+        [8, "Potensi dan keunggulan desa"],
+        [9, "Perubahan Iklim"],
+        [10, "Bencana"],
+        [11, "Desa Digital"],
+        [12, "Prioritas Lainnya"],
+        [13, "Bukan prioritas"],
+      ];
+      const KATEGORI = [
+        [1, "Ketahanan Pangan"],
+        [2, "Stunting"],
+        [3, "Sarpras umum"],
+        [4, "PEL (Pengembangan Ekonomi Lokal)"],
+        [5, "BUMDES/BUMDESMA"],
+        [6, "Non Sarpras Umum"],
+        [7, "Pendataan SDGs"],
+        [8, "BLT Desa"],
+        [9, "3% DOP"],
+      ];
+      const SIFAT = [
+        [1, "Pembangunan"],
+        [2, "Rehabilitasi"],
+        [3, "Peningkatan"],
+        [4, "Pemeliharaan"],
+        [5, "Pengadaan"],
+      ];
+      const CARA = [
+        [1, "Swakelola"],
+        [2, "Pihak Ketiga"],
+        [3, "Kerjasama"],
+      ];
+      const JENIS_MAP = {
+        "1_sarpras": [
+          [1, "Jalan Usaha Tani"],
+          [2, "Embung"],
+          [3, "Sarpras Pendukung Embung"],
+          [4, "Bendung Sederhana"],
+          [5, "Bangunan Irigasi"],
+          [6, "Saluran Irigasi"],
+          [7, "Tempat Penjemuran Tanaman Pangan"],
+          [8, "Lumbung Pangan"],
+          [9, "PKTD Pertanian dan perkebunan"],
+          [10, "PKTD Perdagangan Logistik dan Pangan"],
+          [11, "PKTD Perikanan"],
+          [12, "PKTD Peternakan"],
+          [13, "PKTD Industri Pengelolahan"],
+          [14, "PKTD Perhutanan"],
+          [15, "Jembatan Roda 4"],
+          [16, "Jembatan Roda 2"],
+          [17, "Sumur"],
+          [18, "Instalasi Pompa Hidram"],
+          [19, "Perpipaan"],
+          [20, "Sarpras Lainnya"],
+        ],
+        "1_non_sarpras": [
+          [21, "Bantuan pangan hewani"],
+          [22, "Bantuan pangan ikan"],
+          [23, "Bantuan pangan nabati"],
+          [24, "Pelatihan Perikanan"],
+          [25, "Pelatihan Pertanian/Perkebunan"],
+          [26, "Pelatihan Peternakan"],
+          [27, "Pelatihan Tata Boga"],
+        ],
+        "2_sarpras": [
+          [28, "Saluran Drainase"],
+          [29, "Bangunan Air Bersih"],
+          [30, "Instalasi Penjernihan Air"],
+          [31, "Penampungan Air Hujan (PAH)"],
+          [32, "MCK"],
+          [33, "Jamban Keluarga"],
+          [34, "Gedung Sekolah TK/PAUD"],
+          [35, "Sarpras Pendukung TK/PAUD"],
+          [36, "Polindes"],
+          [37, "Sarpras Pendukung Polindes"],
+          [38, "Posyandu"],
+          [39, "Sarpras Pendukung Posyandu"],
+          [40, "Bak/Tong Sampah"],
+          [41, "Tempat Pengolahan Sampah"],
+          [42, "Tempat Pembuangan Sampah"],
+          [43, "Jembatan Roda 4"],
+          [44, "Jembatan Roda 2"],
+          [45, "Sumur"],
+          [46, "Instalasi Pompa Hidram"],
+          [47, "Perpipaan"],
+          [48, "Sarpras Lainnya"],
+        ],
+        "2_non_sarpras": [
+          [49, "Diklat Kader Kesehatan"],
+          [50, "Insentif KPM"],
+          [51, "Insentif Kader Kesehatan"],
+          [52, "Insentif Kader Posyandu"],
+          [53, "Konseling gizi di Posyandu"],
+          [54, "Operasional Rembuk Stunting"],
+          [55, "Operasional Posyandu"],
+          [56, "Pelayanan Posyandu"],
+          [57, "Pemberian Makanan Tambahan"],
+          [58, "Sosialisasi Pencegahan Perkawinan Anak"],
+          [59, "Operasional eHDW"],
+          [60, "Pelatihan Kesehatan/Stunting"],
+          [61, "Rapat Evaluasi PPS"],
+          [62, "Sosialisasi Kesehatan/PPS"],
+          [63, "Diklat Guru PAUD/TPA"],
+          [64, "Honor Guru PAUD/TPA"],
+          [65, "Pelatihan E HDW"],
+        ],
+        "3_sarpras": [
+          [66, "Jalan Poros Desa"],
+          [67, "Jalan Poros Dusun"],
+          [68, "Jalan Lingkungan"],
+          [69, "Jalan Setapak"],
+          [70, "Jembatan Gantung"],
+          [71, "Gorong-gorong"],
+          [72, "Tembok Penahan Tanah"],
+          [73, "Bronjong"],
+          [74, "Krib Pengarah"],
+          [75, "Tambatan Perahu"],
+          [76, "Gedung Perpustakaan"],
+          [77, "Sarpras Pendukung Perpustakaan"],
+          [78, "Bangunan Olahraga"],
+          [79, "Sarpras Pendukung Olahraga"],
+          [80, "Taman bermain/RTH"],
+          [81, "Pasar"],
+          [82, "Sarpras Pendukung Pasar"],
+          [83, "Bangunan Utama Wisata"],
+          [84, "Sarpras Pendukung Pariwisata"],
+          [85, "Gedung BUMDES"],
+          [86, "Balai Kemasyarakatan"],
+          [87, "Jaringan Internet"],
+          [88, "Listrik Desa"],
+          [89, "PJU/Bantuan Listrik RT"],
+          [90, "Pangkalan Ojek"],
+          [91, "Sumur Resapan/Biofori"],
+          [92, "PKTD Restoran dan Wisata"],
+          [93, "PKTD Prasarana Umum"],
+          [94, "PKTD Lain lain"],
+        ],
+        "4_non_sarpras": [
+          [95, "Pelatihan Pengurus Bumdes"],
+          [96, "Pembentukan Badan Usaha"],
+          [97, "Diklat ekonomi"],
+          [98, "Pelatihan Ekonomi/Wirausaha"],
+          [99, "Penyertaan Modal Bumdes"],
+        ],
+        "5_non_sarpras": [
+          [95, "Pelatihan Pengurus Bumdes"],
+          [96, "Pembentukan Badan Usaha"],
+          [97, "Diklat ekonomi"],
+          [98, "Pelatihan Ekonomi/Wirausaha"],
+          [99, "Penyertaan Modal Bumdes"],
+        ],
+        "6_sarpras": [[100, "Perbaikan Rumah Tinggal"]],
+        "6_non_sarpras": [
+          [101, "Bantuan untuk kaum Difabel"],
+          [102, "Diklat Agama/Sosbudling"],
+          [103, "Pelatihan Aparatur Desa"],
+          [104, "Pelatihan Elektronika"],
+          [105, "Pelatihan Industri kreatif"],
+          [106, "Pelatihan Kelembagaan"],
+          [107, "Pelatihan Komputer"],
+          [108, "Pelatihan Otomotif"],
+          [109, "Pelatihan Sosbud"],
+          [110, "Pelatihan Tata Busana"],
+          [111, "Pelatihan Tata Rias"],
+          [112, "Pelatihan Teknologi Tepat Guna"],
+          [113, "Pembinaan/Penyuluhan"],
+          [114, "Penanganan Bencana Alam"],
+          [115, "Penanganan Bencana Non Alam"],
+          [116, "Pendataan/Pemetaan Potensi Desa"],
+          [117, "Rehabilitasi Ketergantungan obat"],
+          [118, "Penanggulangan TBC"],
+          [119, "Lain lain"],
+        ],
+        "7_non_sarpras": [
+          [120, "Bimtek Pendataan SDGs"],
+          [121, "Honor Admin"],
+          [122, "Honor Enumerator"],
+          [123, "Operasional Pemutakhiran Data"],
+        ],
+        "8_non_sarpras": [[124, "BLT Desa"]],
+        "9_non_sarpras": [
+          [125, "Koordinasi Pemerintah Desa"],
+          [126, "Kegiatan penanggulangan kerawanan sosial"],
+          [127, "Kegiatan lainnya mendukung tugas Pemerintah Desa"],
+        ],
+      };
+      const SATUAN_MAP = {
+        1: "meter",
+        2: "m³",
+        3: "unit",
+        4: "meter",
+        5: "unit",
+        6: "meter",
+        7: "m²",
+        8: "m²",
+        9: "m²",
+        10: "unit",
+        11: "m²",
+        12: "m²",
+        13: "m²",
+        14: "m²",
+        15: "meter",
+        16: "meter",
+        17: "unit",
+        18: "unit",
+        19: "meter",
+        20: "unit",
+        21: "Paket",
+        22: "Paket",
+        23: "Paket",
+        24: "OK",
+        25: "OK",
+        26: "OK",
+        27: "OK",
+        28: "meter",
+        29: "unit",
+        30: "unit",
+        31: "unit",
+        32: "m²",
+        33: "unit",
+        34: "m²",
+        35: "unit",
+        36: "m²",
+        37: "unit",
+        38: "m²",
+        39: "unit",
+        40: "m²",
+        41: "unit",
+        42: "m²",
+        43: "meter",
+        44: "meter",
+        45: "unit",
+        46: "unit",
+        47: "meter",
+        48: "unit",
+        49: "OK",
+        50: "OB",
+        51: "OB",
+        52: "OB",
+        53: "Kali",
+        54: "Kali",
+        55: "Bulan",
+        56: "Kali",
+        57: "OK",
+        58: "Kali",
+        59: "OB",
+        60: "OK",
+        61: "Kali",
+        62: "Kali",
+        63: "OK",
+        64: "OB",
+        65: "OK",
+        66: "meter",
+        67: "meter",
+        68: "meter",
+        69: "meter",
+        70: "meter",
+        71: "meter",
+        72: "meter",
+        73: "meter",
+        74: "meter",
+        75: "meter",
+        76: "m³",
+        77: "unit",
+        78: "m²",
+        79: "unit",
+        80: "m²",
+        81: "m²",
+        82: "unit",
+        83: "m²",
+        84: "unit",
+        85: "m²",
+        86: "m²",
+        87: "unit",
+        88: "unit",
+        89: "unit",
+        90: "unit",
+        91: "unit",
+        92: "m²",
+        93: "unit",
+        94: "OK",
+        95: "Paket",
+        96: "OK",
+        97: "OK",
+        98: "Unit",
+        99: "Unit",
+        100: "Paket",
+        101: "OK",
+        102: "OK",
+        103: "OK",
+        104: "OK",
+        105: "OK",
+        106: "OK",
+        107: "OK",
+        108: "OK",
+        109: "OK",
+        110: "OK",
+        111: "OK",
+        112: "OK",
+        113: "OK",
+        114: "OK",
+        115: "OK",
+        116: "OK",
+        117: "OK",
+        118: "Kali",
+        119: "Paket",
+        120: "Paket",
+        121: "Paket",
+        122: "Paket",
+        123: "OK",
+        124: "KPM/Bulan",
+        125: "Paket",
+        126: "Paket",
+        127: "Paket",
+      };
+
+      const fmtS = (n) => `Rp ${Math.round(n || 0).toLocaleString("id-ID")}`;
+
+      const downloadExcel = (rows, filename) => {
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Data");
+        XLSX.writeFile(wb, filename + ".xlsx");
+      };
+
+      const getLabelSdgs = (v) => {
+        const f = SDGS.find((x) => String(x[0]) === String(v));
+        return f ? f[0] + ". " + f[1] : v || "";
+      };
+      const getLabelPrioritas = (v) => {
+        const f = PRIORITAS.find((x) => String(x[0]) === String(v));
+        return f ? f[0] + ". " + f[1] : v || "";
+      };
+      const getLabelKategori = (v) => {
+        const f = KATEGORI.find((x) => String(x[0]) === String(v));
+        return f ? f[0] + ". " + f[1] : v || "";
+      };
+      const getLabelSifat = (v) => {
+        const f = SIFAT.find((x) => String(x[0]) === String(v));
+        return f ? f[0] + ". " + f[1] : v || "";
+      };
+      const getLabelCara = (v) => {
+        const f = CARA.find((x) => String(x[0]) === String(v));
+        return f ? f[0] + ". " + f[1] : v || "";
+      };
+      const getLabelJenis = (kat, jut, jk) => {
+        const list = JENIS_MAP[kat + "_" + jut] || [];
+        const f = list.find((x) => String(x[0]) === String(jk));
+        return f ? f[0] + ". " + f[1] : jk || "";
+      };
+      const calcPct = (a, b) => (b > 0 ? Math.round((a / b) * 100) : 0);
+      const pctColor = (p) =>
+        p >= 80 ? "#166534" : p >= 50 ? "#92400e" : "#991b1b";
+      const emptyKeg = () => ({
+        sumber_dana: "DDS",
+        kode_induk: "",
+        kode_rekening: "",
+        uraian_apbdes: "",
+        uraian_detail: "",
+        sdgs: "",
+        prioritas: "",
+        kategori: "",
+        jenis_kegiatan_utama: "",
+        jenis_kegiatan: "",
+        sifat: "",
+        cara: "",
+        anggaran_apbdes: 0,
+        rencana_dd: 0,
+        rencana_swadaya: 0,
+        rencana_jumlah: 0,
+        rencana_satuan: "",
+        rencana_volume: 0,
+        realisasi_dd: 0,
+        realisasi_swadaya: 0,
+        realisasi_jumlah: 0,
+        realisasi_volume: 0,
+        realisasi_pct_fisik: 0,
+        realisasi_keterangan: "",
+      });
+
+      // ── ALERT ──
+      function Alert({ ok, text }) {
+        if (!text) return null;
+        return (
+          <div className={`alert ${ok ? "alert-ok" : "alert-err"}`}>
+            {ok ? "✅" : "⚠️"} {text}
           </div>
-        ) : (
-          <div style={{marginBottom:10}}>
-            <label style={{fontSize:13,color:'#374151',fontWeight:500,display:'block',marginBottom:6}}>Username (16 digit angka)</label>
-            <input type="text" inputMode="numeric" maxLength={16} value={username} onChange={e=>setUsername(e.target.value.replace(/\D/g,''))} onKeyDown={e=>e.key==='Enter'&&login()} placeholder="Masukkan username 16 digit" style={{letterSpacing:2}}/>
-          </div>
-        )}
-        <div style={{marginBottom:12}}>
-          <label style={{fontSize:13,color:'#374151',fontWeight:500,display:'block',marginBottom:6}}>Password</label>
-          <input type="password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()} placeholder="Masukkan password"/>
-        </div>
-        <Alert ok={false} text={err}/>
-        <button onClick={login} disabled={loading} className="btn-green" style={{width:'100%',padding:12,fontSize:15,opacity:loading?0.7:1}}>
-          {loading?'Memproses...':'Masuk'}
-        </button>
-        <div style={{textAlign:'center',marginTop:12}}>
-          <button onClick={()=>onLogin('publik')} style={{fontSize:13,border:'none',background:'none',color:'#2563eb',textDecoration:'underline'}}>
-            📊 Lihat dashboard publik
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
+        );
+      }
 
-// ── PILIH DESA ──
-function PilihDesaPage({user, onPilihDesa, onLogout}) {
-  const username = user?.user_metadata?.username || user?.email?.split('@')[0] || ''
-  const [kode,setKode] = useState('')
-  const [err,setErr] = useState('')
-  const [loading,setLoading] = useState(false)
-
-  const masuk = async () => {
-    setErr(''); setLoading(true)
-    if (!kode || kode.length!==10) { setErr('Kode desa harus 10 digit'); setLoading(false); return }
-    const {data,error} = await sb.from('desa').select('*').eq('kode_desa',kode).single()
-    if (error || !data) { setErr('Kode desa tidak ditemukan'); setLoading(false); return }
-    onPilihDesa(data.id, data.nama)
-    setLoading(false)
-  }
-
-  const logout = async () => { await sb.auth.signOut(); onLogout() }
-
-  return (
-    <div style={{minHeight:'100vh',background:'#f0fdf4',display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}}>
-      <div className="card" style={{width:'100%',maxWidth:400}}>
-        <div style={{textAlign:'center',marginBottom:'1.5rem'}}>
-          <div style={{fontSize:36,marginBottom:8}}>🏘</div>
-          <h2 style={{fontSize:18,fontWeight:700,color:'#166534'}}>Pilih Desa</h2>
-          <p style={{fontSize:13,color:'#6b7280',marginTop:4}}>Halo, <b>{username}</b>! Masukkan kode desa.</p>
-        </div>
-        <div style={{marginBottom:12}}>
-          <label style={{fontSize:13,color:'#374151',fontWeight:500,display:'block',marginBottom:6}}>Kode Desa (10 digit angka)</label>
-          <input type="text" inputMode="numeric" maxLength={10} value={kode} onChange={e=>setKode(e.target.value.replace(/\D/g,''))} onKeyDown={e=>e.key==='Enter'&&masuk()} placeholder="Masukkan kode desa" style={{fontSize:18,letterSpacing:4,textAlign:'center'}}/>
-        </div>
-        <Alert ok={false} text={err}/>
-        <button onClick={masuk} disabled={loading} className="btn-green" style={{width:'100%',padding:12,fontSize:15,opacity:loading?0.7:1,marginBottom:10}}>
-          {loading?'Mencari...':'Masuk ke Desa'}
-        </button>
-        <button onClick={logout} className="btn-outline" style={{width:'100%',padding:10,fontSize:13}}>← Kembali ke Login</button>
-      </div>
-    </div>
-  )
-}
-
-// ── ADMIN PAGE ──
-function AdminPage({onLogout}) {
-  const [tab,setTab] = useState('desa')
-  const [desas,setDesas] = useState([])
-  const [loading,setLoading] = useState(true)
-  const [msg,setMsg] = useState(null)
-  const [editDesa,setEditDesa] = useState(null)
-  const [dNama,setDNama] = useState('')
-  const [dKode,setDKode] = useState('')
-  const [dKec,setDKec] = useState('')
-  const [dKab,setDKab] = useState('')
-  const [dAng,setDAng] = useState('')
-
-  useEffect(() => { loadDesa() }, [])
-
-  const loadDesa = async () => {
-    setLoading(true)
-    const {data} = await sb.from('desa').select('*').order('nama')
-    setDesas(data||[])
-    setLoading(false)
-  }
-
-  const showMsg = (ok,t) => { setMsg({ok,t}); setTimeout(()=>setMsg(null),4000) }
-
-  const tambahDesa = async () => {
-    if (!dNama.trim()) { showMsg(false,'Isi nama desa'); return }
-    if (!/^\d{10}$/.test(dKode)) { showMsg(false,'Kode desa harus 10 digit angka'); return }
-    if (desas.find(d=>d.kode_desa===dKode)) { showMsg(false,'Kode desa sudah dipakai'); return }
-    const {error} = await sb.from('desa').insert([{nama:dNama,kode_desa:dKode,kecamatan:dKec,kabupaten:dKab,anggaran:Number(dAng)||0}])
-    if (error) { showMsg(false,error.message); return }
-    showMsg(true,`Desa "${dNama}" berhasil ditambahkan`)
-    setDNama(''); setDKode(''); setDKec(''); setDKab(''); setDAng('')
-    loadDesa()
-  }
-
-  const hapusDesa = async (id,nama) => {
-    if (!confirm(`Hapus desa ${nama}?`)) return
-    const {error} = await sb.from('desa').delete().eq('id',id)
-    if (error) showMsg(false,error.message)
-    else { showMsg(true,'Desa berhasil dihapus'); loadDesa() }
-  }
-
-  const simpanEditDesa = async () => {
-    const {error} = await sb.from('desa').update({
-      nama:editDesa.nama, kode_desa:editDesa.kode_desa,
-      kecamatan:editDesa.kecamatan, kabupaten:editDesa.kabupaten,
-      anggaran:editDesa.anggaran
-    }).eq('id',editDesa.id)
-    if (error) showMsg(false,error.message)
-    else { showMsg(true,'Data desa diupdate'); setEditDesa(null); loadDesa() }
-  }
-
-  const logout = async () => { await sb.auth.signOut(); onLogout() }
-
-  return (
-    <div style={{minHeight:'100vh',background:'#f0fdf4'}}>
-      <div className="wrap">
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem',flexWrap:'wrap',gap:8,paddingTop:'1rem'}}>
-          <div>
-            <h1 style={{fontSize:18,fontWeight:700,color:'#166534',margin:0}}>⚙️ Panel Admin</h1>
-            <p style={{fontSize:12,color:'#6b7280',margin:0}}>{desas.length} desa terdaftar</p>
-          </div>
-          <button onClick={logout} className="btn-outline" style={{fontSize:13}}>Keluar</button>
-        </div>
-
-        <div className="tab-bar">
-          {[['desa','🏘 Kelola Desa'],['rekap','📊 Rekap']].map(([t,l]) => (
-            <button key={t} onClick={()=>setTab(t)} className={`tab-btn${tab===t?' active':''}`}>{l}</button>
-          ))}
-        </div>
-
-        {msg && <Alert ok={msg.ok} text={msg.t}/>}
-
-        {tab==='desa' && (
-          <>
-            <div className="card">
-              <div className="sec-title">Tambah Desa Baru</div>
-              <div className="grid2" style={{marginBottom:10}}>
-                <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Kode Desa (10 digit)</label><input value={dKode} onChange={e=>setDKode(e.target.value.replace(/\D/g,''))} maxLength={10} placeholder="1234567890"/></div>
-                <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Nama Desa</label><input value={dNama} onChange={e=>setDNama(e.target.value)} placeholder="Nama desa"/></div>
-                <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Kecamatan</label><input value={dKec} onChange={e=>setDKec(e.target.value)} placeholder="Kecamatan"/></div>
-                <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Kabupaten/Kota</label><input value={dKab} onChange={e=>setDKab(e.target.value)} placeholder="Kabupaten/Kota"/></div>
-                <div><label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Total Anggaran (Rp)</label><input type="number" value={dAng} onChange={e=>setDAng(e.target.value)} placeholder="1200000000"/></div>
-              </div>
-              <button onClick={tambahDesa} className="btn-green" style={{padding:'9px 20px'}}>+ Tambah Desa</button>
+      // ── BAR ──
+      function Bar({ p }) {
+        return (
+          <div className="bar-wrap">
+            <div className="bar-bg">
+              <div
+                className="bar-fill"
+                style={{
+                  width: Math.min(p, 100) + "%",
+                  background: pctColor(p),
+                }}
+              />
             </div>
+            <span
+              style={{
+                fontSize: 11,
+                minWidth: 28,
+                color: pctColor(p),
+                fontWeight: 600,
+              }}
+            >
+              {p}%
+            </span>
+          </div>
+        );
+      }
 
-            <div className="card">
-              <div className="sec-title">Daftar Desa ({desas.length})</div>
-              {loading ? <div style={{textAlign:'center',padding:'2rem',color:'#6b7280'}}>Memuat...</div> :
-               desas.length===0 ? <div style={{textAlign:'center',padding:'2rem',color:'#9ca3af'}}>Belum ada desa</div> : (
-                <div style={{overflowX:'auto'}}>
-                  <table>
-                    <thead><tr><th>Kode</th><th>Nama Desa</th><th>Kecamatan</th><th>Kabupaten</th><th>Anggaran</th><th>Aksi</th></tr></thead>
-                    <tbody>
-                      {[...desas].sort((a,b)=>a.kode_desa.localeCompare(b.kode_desa)).map(d => (
-                        <tr key={d.id}>
-                          <td><code style={{fontSize:12,letterSpacing:1,background:'#f3f4f6',padding:'2px 6px',borderRadius:4}}>{d.kode_desa}</code></td>
-                          <td style={{fontWeight:600}}>{d.nama}</td>
-                          <td style={{color:'#6b7280'}}>{d.kecamatan||'-'}</td>
-                          <td style={{color:'#6b7280'}}>{d.kabupaten||'-'}</td>
-                          <td>{fmtS(d.anggaran||0)}</td>
-                          <td>
-                            <div style={{display:'flex',gap:6}}>
-                              <button onClick={()=>setEditDesa({...d})} style={{fontSize:11,padding:'4px 10px',border:'1px solid #3b82f6',color:'#3b82f6',background:'white',borderRadius:6}}>✏️ Edit</button>
-                              <button onClick={()=>hapusDesa(d.id,d.nama)} style={{fontSize:11,padding:'4px 10px',border:'1px solid #ef4444',color:'#ef4444',background:'white',borderRadius:6}}>🗑 Hapus</button>
-                            </div>
-                          </td>
-                        </tr>
+      // ── LOADING ──
+      function Loading() {
+        return (
+          <div
+            style={{
+              minHeight: "100vh",
+              background: "#f0fdf4",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <div style={{ fontSize: 14, color: "#6b7280" }}>Memuat...</div>
+          </div>
+        );
+      }
+
+      // ── LOGIN PAGE ──
+      function LoginPage({ onLogin }) {
+        const [mode, setMode] = useState("pendamping");
+        const [username, setUsername] = useState("");
+        const [email, setEmail] = useState("");
+        const [password, setPassword] = useState("");
+        const [err, setErr] = useState("");
+        const [loading, setLoading] = useState(false);
+
+        const login = async () => {
+          setErr("");
+          setLoading(true);
+          try {
+            let loginEmail = "";
+            if (mode === "admin") {
+              if (!email.trim()) {
+                setErr("Email wajib diisi");
+                setLoading(false);
+                return;
+              }
+              loginEmail = email.trim();
+            } else {
+              if (!username || username.length !== 16) {
+                setErr("Username harus 16 digit angka");
+                setLoading(false);
+                return;
+              }
+              loginEmail = username + "@danadesa.id";
+            }
+            if (!password) {
+              setErr("Password wajib diisi");
+              setLoading(false);
+              return;
+            }
+            const { data, error } = await sb.auth.signInWithPassword({
+              email: loginEmail,
+              password,
+            });
+            if (error || !data.user) {
+              setErr("Email/username atau password salah");
+              setLoading(false);
+              return;
+            }
+            if (mode === "admin" && !isAdmin(data.user)) {
+              await sb.auth.signOut();
+              setErr("Akun ini tidak punya akses admin");
+              setLoading(false);
+              return;
+            }
+            if (mode === "pendamping" && isAdmin(data.user)) {
+              await sb.auth.signOut();
+              setErr("Gunakan tab Admin untuk akun ini");
+              setLoading(false);
+              return;
+            }
+            onLogin(data.user);
+          } catch (e) {
+            setErr("Terjadi kesalahan, coba lagi");
+          }
+          setLoading(false);
+        };
+
+        return (
+          <div
+            style={{
+              minHeight: "100vh",
+              background: "#f0fdf4",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "1rem",
+            }}
+          >
+            <div className="card" style={{ width: "100%", maxWidth: 400 }}>
+              <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+                <div style={{ fontSize: 40, marginBottom: 8 }}>🏡</div>
+                <h1 style={{ fontSize: 22, fontWeight: 700, color: "#166534" }}>
+                  Sistem Dana Desa
+                </h1>
+                <p style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>
+                  Transparansi penggunaan anggaran desa
+                </p>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  background: "#f3f4f6",
+                  borderRadius: 10,
+                  padding: 4,
+                  marginBottom: "1.5rem",
+                }}
+              >
+                {[
+                  ["pendamping", "👤 Pendamping"],
+                  ["admin", "⚙️ Admin"],
+                ].map(([m, l]) => (
+                  <button
+                    key={m}
+                    onClick={() => {
+                      setMode(m);
+                      setErr("");
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: 8,
+                      fontSize: 12,
+                      border: "none",
+                      borderRadius: 8,
+                      background: mode === m ? "white" : "transparent",
+                      color: mode === m ? "#166534" : "#6b7280",
+                      fontWeight: mode === m ? 600 : 400,
+                      boxShadow:
+                        mode === m ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
+                    }}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+              {mode === "admin" ? (
+                <div style={{ marginBottom: 10 }}>
+                  <label
+                    style={{
+                      fontSize: 13,
+                      color: "#374151",
+                      fontWeight: 500,
+                      display: "block",
+                      marginBottom: 6,
+                    }}
+                  >
+                    Email Admin
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && login()}
+                    placeholder="admin@danadesa.id"
+                  />
+                </div>
+              ) : (
+                <div style={{ marginBottom: 10 }}>
+                  <label
+                    style={{
+                      fontSize: 13,
+                      color: "#374151",
+                      fontWeight: 500,
+                      display: "block",
+                      marginBottom: 6,
+                    }}
+                  >
+                    Username (16 digit angka)
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={16}
+                    value={username}
+                    onChange={(e) =>
+                      setUsername(e.target.value.replace(/\D/g, ""))
+                    }
+                    onKeyDown={(e) => e.key === "Enter" && login()}
+                    placeholder="Masukkan username 16 digit"
+                    style={{ letterSpacing: 2 }}
+                  />
+                </div>
+              )}
+              <div style={{ marginBottom: 12 }}>
+                <label
+                  style={{
+                    fontSize: 13,
+                    color: "#374151",
+                    fontWeight: 500,
+                    display: "block",
+                    marginBottom: 6,
+                  }}
+                >
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && login()}
+                  placeholder="Masukkan password"
+                />
+              </div>
+              <Alert ok={false} text={err} />
+              <button
+                onClick={login}
+                disabled={loading}
+                className="btn-green"
+                style={{
+                  width: "100%",
+                  padding: 12,
+                  fontSize: 15,
+                  opacity: loading ? 0.7 : 1,
+                }}
+              >
+                {loading ? "Memproses..." : "Masuk"}
+              </button>
+              <div style={{ textAlign: "center", marginTop: 12 }}>
+                <button
+                  onClick={() => onLogin("publik")}
+                  style={{
+                    fontSize: 13,
+                    border: "none",
+                    background: "none",
+                    color: "#2563eb",
+                    textDecoration: "underline",
+                  }}
+                >
+                  📊 Lihat dashboard publik
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // ── PILIH DESA ──
+      function PilihDesaPage({ user, onPilihDesa, onLogout }) {
+        const username =
+          user?.user_metadata?.username || user?.email?.split("@")[0] || "";
+        const [kode, setKode] = useState("");
+        const [err, setErr] = useState("");
+        const [loading, setLoading] = useState(false);
+
+        const masuk = async () => {
+          setErr("");
+          setLoading(true);
+          if (!kode || kode.length !== 10) {
+            setErr("Kode desa harus 10 digit");
+            setLoading(false);
+            return;
+          }
+          const { data, error } = await sb
+            .from("desa")
+            .select("*")
+            .eq("kode_desa", kode)
+            .single();
+          if (error || !data) {
+            setErr("Kode desa tidak ditemukan");
+            setLoading(false);
+            return;
+          }
+          onPilihDesa(data.id, data.nama);
+          setLoading(false);
+        };
+
+        const logout = async () => {
+          await sb.auth.signOut();
+          onLogout();
+        };
+
+        return (
+          <div
+            style={{
+              minHeight: "100vh",
+              background: "#f0fdf4",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "1rem",
+            }}
+          >
+            <div className="card" style={{ width: "100%", maxWidth: 400 }}>
+              <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+                <div style={{ fontSize: 36, marginBottom: 8 }}>🏘</div>
+                <h2 style={{ fontSize: 18, fontWeight: 700, color: "#166534" }}>
+                  Pilih Desa
+                </h2>
+                <p style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>
+                  Halo, <b>{username}</b>! Masukkan kode desa.
+                </p>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <label
+                  style={{
+                    fontSize: 13,
+                    color: "#374151",
+                    fontWeight: 500,
+                    display: "block",
+                    marginBottom: 6,
+                  }}
+                >
+                  Kode Desa (10 digit angka)
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={10}
+                  value={kode}
+                  onChange={(e) => setKode(e.target.value.replace(/\D/g, ""))}
+                  onKeyDown={(e) => e.key === "Enter" && masuk()}
+                  placeholder="Masukkan kode desa"
+                  style={{
+                    fontSize: 18,
+                    letterSpacing: 4,
+                    textAlign: "center",
+                  }}
+                />
+              </div>
+              <Alert ok={false} text={err} />
+              <button
+                onClick={masuk}
+                disabled={loading}
+                className="btn-green"
+                style={{
+                  width: "100%",
+                  padding: 12,
+                  fontSize: 15,
+                  opacity: loading ? 0.7 : 1,
+                  marginBottom: 10,
+                }}
+              >
+                {loading ? "Mencari..." : "Masuk ke Desa"}
+              </button>
+              <button
+                onClick={logout}
+                className="btn-outline"
+                style={{ width: "100%", padding: 10, fontSize: 13 }}
+              >
+                ← Kembali ke Login
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      // ── ADMIN PAGE ──
+      function AdminPage({ onLogout }) {
+        const [tab, setTab] = useState("desa");
+        const [desas, setDesas] = useState([]);
+        const [loading, setLoading] = useState(true);
+        const [msg, setMsg] = useState(null);
+        const [editDesa, setEditDesa] = useState(null);
+        const [dNama, setDNama] = useState("");
+        const [dKode, setDKode] = useState("");
+        const [dKec, setDKec] = useState("");
+        const [dKab, setDKab] = useState("");
+        const [dAng, setDAng] = useState("");
+
+        useEffect(() => {
+          loadDesa();
+        }, []);
+
+        const loadDesa = async () => {
+          setLoading(true);
+          const { data } = await sb.from("desa").select("*").order("nama");
+          setDesas(data || []);
+          setLoading(false);
+        };
+
+        const showMsg = (ok, t) => {
+          setMsg({ ok, t });
+          setTimeout(() => setMsg(null), 4000);
+        };
+
+        const tambahDesa = async () => {
+          if (!dNama.trim()) {
+            showMsg(false, "Isi nama desa");
+            return;
+          }
+          if (!/^\d{10}$/.test(dKode)) {
+            showMsg(false, "Kode desa harus 10 digit angka");
+            return;
+          }
+          if (desas.find((d) => d.kode_desa === dKode)) {
+            showMsg(false, "Kode desa sudah dipakai");
+            return;
+          }
+          const { error } = await sb.from("desa").insert([
+            {
+              nama: dNama,
+              kode_desa: dKode,
+              kecamatan: dKec,
+              kabupaten: dKab,
+              anggaran: Number(dAng) || 0,
+            },
+          ]);
+          if (error) {
+            showMsg(false, error.message);
+            return;
+          }
+          showMsg(true, `Desa "${dNama}" berhasil ditambahkan`);
+          setDNama("");
+          setDKode("");
+          setDKec("");
+          setDKab("");
+          setDAng("");
+          loadDesa();
+        };
+
+        const hapusDesa = async (id, nama) => {
+          if (!confirm(`Hapus desa ${nama}?`)) return;
+          const { error } = await sb.from("desa").delete().eq("id", id);
+          if (error) showMsg(false, error.message);
+          else {
+            showMsg(true, "Desa berhasil dihapus");
+            loadDesa();
+          }
+        };
+
+        const simpanEditDesa = async () => {
+          const { error } = await sb
+            .from("desa")
+            .update({
+              nama: editDesa.nama,
+              kode_desa: editDesa.kode_desa,
+              kecamatan: editDesa.kecamatan,
+              kabupaten: editDesa.kabupaten,
+              anggaran: editDesa.anggaran,
+            })
+            .eq("id", editDesa.id);
+          if (error) showMsg(false, error.message);
+          else {
+            showMsg(true, "Data desa diupdate");
+            setEditDesa(null);
+            loadDesa();
+          }
+        };
+
+        const logout = async () => {
+          await sb.auth.signOut();
+          onLogout();
+        };
+
+        return (
+          <div style={{ minHeight: "100vh", background: "#f0fdf4" }}>
+            <div className="wrap">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "1rem",
+                  flexWrap: "wrap",
+                  gap: 8,
+                  paddingTop: "1rem",
+                }}
+              >
+                <div>
+                  <h1
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 700,
+                      color: "#166534",
+                      margin: 0,
+                    }}
+                  >
+                    ⚙️ Panel Admin
+                  </h1>
+                  <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
+                    {desas.length} desa terdaftar
+                  </p>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    onClick={downloadDesa}
+                    style={{
+                      fontSize: 13,
+                      padding: "7px 16px",
+                      borderRadius: 8,
+                      border: "1px solid #16a34a",
+                      background: "#f0fdf4",
+                      color: "#166534",
+                      fontWeight: 500,
+                    }}
+                  >
+                    ⬇ Download Data
+                  </button>
+                  <button
+                    onClick={logout}
+                    className="btn-outline"
+                    style={{ fontSize: 13 }}
+                  >
+                    Keluar
+                  </button>
+                </div>
+              </div>
+
+              <div className="tab-bar">
+                {[
+                  ["desa", "🏘 Kelola Desa"],
+                  ["rekap", "📊 Rekap"],
+                ].map(([t, l]) => (
+                  <button
+                    key={t}
+                    onClick={() => setTab(t)}
+                    className={`tab-btn${tab === t ? " active" : ""}`}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+
+              {msg && <Alert ok={msg.ok} text={msg.t} />}
+
+              {tab === "desa" && (
+                <>
+                  <div className="card">
+                    <div className="sec-title">Tambah Desa Baru</div>
+                    <div className="grid2" style={{ marginBottom: 10 }}>
+                      <div>
+                        <label
+                          style={{
+                            fontSize: 12,
+                            color: "#374151",
+                            display: "block",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Kode Desa (10 digit)
+                        </label>
+                        <input
+                          value={dKode}
+                          onChange={(e) =>
+                            setDKode(e.target.value.replace(/\D/g, ""))
+                          }
+                          maxLength={10}
+                          placeholder="1234567890"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            fontSize: 12,
+                            color: "#374151",
+                            display: "block",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Nama Desa
+                        </label>
+                        <input
+                          value={dNama}
+                          onChange={(e) => setDNama(e.target.value)}
+                          placeholder="Nama desa"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            fontSize: 12,
+                            color: "#374151",
+                            display: "block",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Kecamatan
+                        </label>
+                        <input
+                          value={dKec}
+                          onChange={(e) => setDKec(e.target.value)}
+                          placeholder="Kecamatan"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            fontSize: 12,
+                            color: "#374151",
+                            display: "block",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Kabupaten/Kota
+                        </label>
+                        <input
+                          value={dKab}
+                          onChange={(e) => setDKab(e.target.value)}
+                          placeholder="Kabupaten/Kota"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            fontSize: 12,
+                            color: "#374151",
+                            display: "block",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Total Anggaran (Rp)
+                        </label>
+                        <input
+                          type="number"
+                          value={dAng}
+                          onChange={(e) => setDAng(e.target.value)}
+                          placeholder="1200000000"
+                        />
+                      </div>
+                    </div>
+                    <button
+                      onClick={tambahDesa}
+                      className="btn-green"
+                      style={{ padding: "9px 20px" }}
+                    >
+                      + Tambah Desa
+                    </button>
+                  </div>
+
+                  <div className="card">
+                    <div className="sec-title">
+                      Daftar Desa ({desas.length})
+                    </div>
+                    {loading ? (
+                      <div
+                        style={{
+                          textAlign: "center",
+                          padding: "2rem",
+                          color: "#6b7280",
+                        }}
+                      >
+                        Memuat...
+                      </div>
+                    ) : desas.length === 0 ? (
+                      <div
+                        style={{
+                          textAlign: "center",
+                          padding: "2rem",
+                          color: "#9ca3af",
+                        }}
+                      >
+                        Belum ada desa
+                      </div>
+                    ) : (
+                      <div style={{ overflowX: "auto" }}>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>Kode</th>
+                              <th>Nama Desa</th>
+                              <th>Kecamatan</th>
+                              <th>Kabupaten</th>
+                              <th>Anggaran</th>
+                              <th>Aksi</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {[...desas]
+                              .sort((a, b) =>
+                                a.kode_desa.localeCompare(b.kode_desa),
+                              )
+                              .map((d) => (
+                                <tr key={d.id}>
+                                  <td>
+                                    <code
+                                      style={{
+                                        fontSize: 12,
+                                        letterSpacing: 1,
+                                        background: "#f3f4f6",
+                                        padding: "2px 6px",
+                                        borderRadius: 4,
+                                      }}
+                                    >
+                                      {d.kode_desa}
+                                    </code>
+                                  </td>
+                                  <td style={{ fontWeight: 600 }}>{d.nama}</td>
+                                  <td style={{ color: "#6b7280" }}>
+                                    {d.kecamatan || "-"}
+                                  </td>
+                                  <td style={{ color: "#6b7280" }}>
+                                    {d.kabupaten || "-"}
+                                  </td>
+                                  <td>{fmtS(d.anggaran || 0)}</td>
+                                  <td>
+                                    <div style={{ display: "flex", gap: 6 }}>
+                                      <button
+                                        onClick={() => setEditDesa({ ...d })}
+                                        style={{
+                                          fontSize: 11,
+                                          padding: "4px 10px",
+                                          border: "1px solid #3b82f6",
+                                          color: "#3b82f6",
+                                          background: "white",
+                                          borderRadius: 6,
+                                        }}
+                                      >
+                                        ✏️ Edit
+                                      </button>
+                                      <button
+                                        onClick={() => hapusDesa(d.id, d.nama)}
+                                        style={{
+                                          fontSize: 11,
+                                          padding: "4px 10px",
+                                          border: "1px solid #ef4444",
+                                          color: "#ef4444",
+                                          background: "white",
+                                          borderRadius: 6,
+                                        }}
+                                      >
+                                        🗑 Hapus
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {tab === "rekap" && (
+                <>
+                  <div className="grid3">
+                    <div className="metric">
+                      <div className="metric-label">Total Desa</div>
+                      <div
+                        className="metric-value"
+                        style={{ color: "#166534" }}
+                      >
+                        {desas.length}
+                      </div>
+                    </div>
+                    <div className="metric">
+                      <div className="metric-label">Total Anggaran</div>
+                      <div
+                        className="metric-value"
+                        style={{ color: "#166534" }}
+                      >
+                        {fmtS(desas.reduce((s, d) => s + (d.anggaran || 0), 0))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="card">
+                    <div style={{ overflowX: "auto" }}>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Kode</th>
+                            <th>Desa</th>
+                            <th>Kecamatan</th>
+                            <th>Kabupaten</th>
+                            <th>Anggaran</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {[...desas]
+                            .sort((a, b) =>
+                              a.kode_desa.localeCompare(b.kode_desa),
+                            )
+                            .map((d) => (
+                              <tr key={d.id}>
+                                <td>
+                                  <code
+                                    style={{
+                                      fontSize: 12,
+                                      letterSpacing: 1,
+                                      background: "#f3f4f6",
+                                      padding: "2px 6px",
+                                      borderRadius: 4,
+                                    }}
+                                  >
+                                    {d.kode_desa}
+                                  </code>
+                                </td>
+                                <td style={{ fontWeight: 600 }}>{d.nama}</td>
+                                <td style={{ color: "#6b7280" }}>
+                                  {d.kecamatan || "-"}
+                                </td>
+                                <td style={{ color: "#6b7280" }}>
+                                  {d.kabupaten || "-"}
+                                </td>
+                                <td>{fmtS(d.anggaran || 0)}</td>
+                              </tr>
+                            ))}
+                        </tbody>{" "}
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {editDesa && (
+                <div className="modal-bg">
+                  <div className="modal" style={{ maxWidth: 480 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "1rem",
+                      }}
+                    >
+                      <div style={{ fontSize: 15, fontWeight: 700 }}>
+                        ✏️ Edit Desa
+                      </div>
+                      <button
+                        onClick={() => setEditDesa(null)}
+                        style={{
+                          border: "none",
+                          background: "none",
+                          fontSize: 20,
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <div className="grid2" style={{ marginBottom: 12 }}>
+                      {[
+                        ["Nama Desa", "nama"],
+                        ["Kode Desa", "kode_desa"],
+                        ["Kecamatan", "kecamatan"],
+                        ["Kabupaten", "kabupaten"],
+                      ].map(([l, k]) => (
+                        <div key={k}>
+                          <label
+                            style={{
+                              fontSize: 12,
+                              color: "#374151",
+                              display: "block",
+                              marginBottom: 4,
+                            }}
+                          >
+                            {l}
+                          </label>
+                          <input
+                            value={editDesa[k] || ""}
+                            onChange={(e) =>
+                              setEditDesa({ ...editDesa, [k]: e.target.value })
+                            }
+                          />
+                        </div>
                       ))}
-                    </tbody>
-                  </table>
+                      <div style={{ gridColumn: "1/-1" }}>
+                        <label
+                          style={{
+                            fontSize: 12,
+                            color: "#374151",
+                            display: "block",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Total Anggaran (Rp)
+                        </label>
+                        <input
+                          type="number"
+                          value={editDesa.anggaran || 0}
+                          onChange={(e) =>
+                            setEditDesa({
+                              ...editDesa,
+                              anggaran: Number(e.target.value),
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button
+                        onClick={simpanEditDesa}
+                        className="btn-green"
+                        style={{ flex: 1, padding: 10, fontSize: 14 }}
+                      >
+                        💾 Simpan
+                      </button>
+                      <button
+                        onClick={() => setEditDesa(null)}
+                        className="btn-outline"
+                        style={{ padding: "10px 20px", fontSize: 14 }}
+                      >
+                        Batal
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
-          </>
-        )}
+          </div>
+        );
+      }
 
-        {tab==='rekap' && (
-          <>
-            <div className="grid3">
-              <div className="metric"><div className="metric-label">Total Desa</div><div className="metric-value" style={{color:'#166534'}}>{desas.length}</div></div>
-              <div className="metric"><div className="metric-label">Total Anggaran</div><div className="metric-value" style={{color:'#166534'}}>{fmtS(desas.reduce((s,d)=>s+(d.anggaran||0),0))}</div></div>
-            </div>
-            <div className="card">
-              <div style={{overflowX:'auto'}}>
-                <table>
-                  <thead><tr><th>Kode</th><th>Desa</th><th>Kecamatan</th><th>Kabupaten</th><th>Anggaran</th></tr></thead>
-                  <tbody>
-                    {[...desas].sort((a,b)=>a.kode_desa.localeCompare(b.kode_desa)).map(d => (
-                      <tr key={d.id}>
-                        <td><code style={{fontSize:12,letterSpacing:1,background:'#f3f4f6',padding:'2px 6px',borderRadius:4}}>{d.kode_desa}</code></td>
-                        <td style={{fontWeight:600}}>{d.nama}</td>
-                        <td style={{color:'#6b7280'}}>{d.kecamatan||'-'}</td>
-                        <td style={{color:'#6b7280'}}>{d.kabupaten||'-'}</td>
-                        <td>{fmtS(d.anggaran||0)}</td>
-                      </tr>
-                    ))}
-                  </tbody>                </table>
-              </div>
-            </div>
-          </>
-        )}
+      // ── FORM KEGIATAN ──
+      function FormKegiatan({ initial, desaId, onSave, onClose }) {
+        const [f, setF] = useState(
+          initial ? { ...emptyKeg(), ...initial } : emptyKeg(),
+        );
+        const [err, setErr] = useState("");
+        const [saving, setSaving] = useState(false);
 
-        {editDesa && (
+        const s = (k, v) => setF((p) => ({ ...p, [k]: v }));
+        const totR = (f.rencana_dd || 0) + (f.rencana_swadaya || 0);
+        const totRl = (f.realisasi_dd || 0) + (f.realisasi_swadaya || 0);
+        const pctAng = calcPct(f.realisasi_dd, f.rencana_dd);
+        const pctFis =
+          f.rencana_volume > 0
+            ? calcPct(f.realisasi_volume, f.rencana_volume)
+            : 0;
+        const jenisList =
+          f.kategori && f.jenis_kegiatan_utama
+            ? JENIS_MAP[f.kategori + "_" + f.jenis_kegiatan_utama] || []
+            : [];
+        const satuan = f.jenis_kegiatan
+          ? SATUAN_MAP[Number(f.jenis_kegiatan)] || ""
+          : "";
+
+        const simpan = async () => {
+          const missing = [];
+          if (!f.sumber_dana) missing.push("Sumber Dana");
+          if (!f.uraian_apbdes.trim()) missing.push("Uraian APBDes");
+          if (!f.uraian_detail.trim()) missing.push("Uraian Detail");
+          if (!f.sdgs) missing.push("Tagging SDGs");
+          if (!f.prioritas) missing.push("Tagging Prioritas");
+          if (!f.kategori) missing.push("Kategori Kegiatan");
+          if (!f.jenis_kegiatan_utama) missing.push("Kegiatan");
+          if (!f.jenis_kegiatan) missing.push("Jenis Kegiatan");
+          if (!f.sifat) missing.push("Sifat Pengadaan");
+          if (!f.cara) missing.push("Cara Pengadaan");
+          if (!f.rencana_dd) missing.push("Anggaran Dana Desa");
+          if (!f.rencana_jumlah) missing.push("Jumlah Kegiatan");
+          if (!f.rencana_volume) missing.push("Volume Kegiatan");
+          if (missing.length > 0) {
+            setErr("Wajib diisi: " + missing.join(", "));
+            return;
+          }
+          setSaving(true);
+          const payload = { ...f, desa_id: desaId, rencana_satuan: satuan };
+          let error;
+          if (f.id) {
+            ({ error } = await sb
+              .from("kegiatan")
+              .update(payload)
+              .eq("id", f.id));
+          } else {
+            ({ error } = await sb.from("kegiatan").insert([payload]));
+          }
+          if (error) {
+            setErr(error.message);
+            setSaving(false);
+            return;
+          }
+          onSave();
+          setSaving(false);
+        };
+
+        const fld = (label, key, type = "text", req = false) => (
+          <div>
+            <label
+              style={{
+                fontSize: 12,
+                color: "#374151",
+                display: "block",
+                marginBottom: 4,
+                fontWeight: 500,
+              }}
+            >
+              {label}
+              {req && <span style={{ color: "red" }}>*</span>}
+            </label>
+            <input
+              type={type}
+              value={f[key] || ""}
+              onChange={(e) =>
+                s(
+                  key,
+                  type === "number"
+                    ? Number(e.target.value) || 0
+                    : e.target.value,
+                )
+              }
+            />
+          </div>
+        );
+
+        const sel = (label, key, opts, req = false, onChange) => (
+          <div>
+            <label
+              style={{
+                fontSize: 12,
+                color: "#374151",
+                display: "block",
+                marginBottom: 4,
+                fontWeight: 500,
+              }}
+            >
+              {label}
+              {req && <span style={{ color: "red" }}>*</span>}
+            </label>
+            <select
+              value={f[key] || ""}
+              onChange={(e) => {
+                s(key, e.target.value);
+                onChange && onChange(e.target.value);
+              }}
+            >
+              <option value="">— Pilih —</option>
+              {opts.map(([v, l]) => (
+                <option key={v} value={String(v)}>
+                  {v}. {l}
+                </option>
+              ))}
+            </select>
+          </div>
+        );
+
+        const rbox = (label, val, color = "#1d4ed8") => (
+          <div>
+            <label
+              style={{
+                fontSize: 12,
+                color: "#374151",
+                display: "block",
+                marginBottom: 4,
+                fontWeight: 500,
+              }}
+            >
+              {label}
+            </label>
+            <div className="read-box" style={{ color }}>
+              {val || "—"}
+            </div>
+          </div>
+        );
+
+        return (
           <div className="modal-bg">
-            <div className="modal" style={{maxWidth:480}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem'}}>
-                <div style={{fontSize:15,fontWeight:700}}>✏️ Edit Desa</div>
-                <button onClick={()=>setEditDesa(null)} style={{border:'none',background:'none',fontSize:20}}>✕</button>
+            <div className="modal">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "1rem",
+                }}
+              >
+                <div
+                  style={{ fontSize: 15, fontWeight: 700, color: "#166534" }}
+                >
+                  {f.id ? "✏️ Edit Kegiatan" : "➕ Tambah Kegiatan"}
+                </div>
+                <button
+                  onClick={onClose}
+                  style={{ border: "none", background: "none", fontSize: 20 }}
+                >
+                  ✕
+                </button>
               </div>
-              <div className="grid2" style={{marginBottom:12}}>
-                {[['Nama Desa','nama'],['Kode Desa','kode_desa'],['Kecamatan','kecamatan'],['Kabupaten','kabupaten']].map(([l,k]) => (
-                  <div key={k}>
-                    <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>{l}</label>
-                    <input value={editDesa[k]||''} onChange={e=>setEditDesa({...editDesa,[k]:e.target.value})}/>
+
+              <div className="sec-box">
+                <div className="sec-title">A. Identifikasi Kegiatan</div>
+                <div className="grid2" style={{ marginBottom: 10 }}>
+                  <div>
+                    <label
+                      style={{
+                        fontSize: 12,
+                        color: "#374151",
+                        display: "block",
+                        marginBottom: 4,
+                        fontWeight: 500,
+                      }}
+                    >
+                      Sumber Dana<span style={{ color: "red" }}>*</span>
+                    </label>
+                    <select
+                      value={f.sumber_dana}
+                      onChange={(e) => s("sumber_dana", e.target.value)}
+                    >
+                      <option value="DDS">DDS</option>
+                      <option value="SDD">SDD</option>
+                    </select>
+                  </div>
+                  {fld("Kode Induk/Sub Kegiatan", "kode_induk")}
+                  {fld("Kode Rekening", "kode_rekening")}
+                </div>
+                {fld("Uraian APBDes", "uraian_apbdes", "text", true)}
+                <div style={{ marginTop: 10 }}>
+                  <label
+                    style={{
+                      fontSize: 12,
+                      color: "#374151",
+                      display: "block",
+                      marginBottom: 4,
+                      fontWeight: 500,
+                    }}
+                  >
+                    Uraian Detail Kegiatan
+                    <span style={{ color: "red" }}>*</span>
+                  </label>
+                  <textarea
+                    value={f.uraian_detail}
+                    onChange={(e) => s("uraian_detail", e.target.value)}
+                    rows={2}
+                    style={{ resize: "vertical" }}
+                  />
+                </div>
+              </div>
+
+              <div className="sec-box">
+                <div className="sec-title">B. Klasifikasi & Tagging</div>
+                <div className="grid2">
+                  {sel("Tagging SDGs", "sdgs", SDGS, true)}
+                  {sel("Tagging Prioritas", "prioritas", PRIORITAS, true)}
+                  {sel("Kategori Kegiatan", "kategori", KATEGORI, true, () => {
+                    s("jenis_kegiatan_utama", "");
+                    s("jenis_kegiatan", "");
+                  })}
+                  <div>
+                    <label
+                      style={{
+                        fontSize: 12,
+                        color: "#374151",
+                        display: "block",
+                        marginBottom: 4,
+                        fontWeight: 500,
+                      }}
+                    >
+                      Kegiatan<span style={{ color: "red" }}>*</span>
+                    </label>
+                    <select
+                      value={f.jenis_kegiatan_utama}
+                      onChange={(e) => {
+                        s("jenis_kegiatan_utama", e.target.value);
+                        s("jenis_kegiatan", "");
+                      }}
+                    >
+                      <option value="">— Pilih —</option>
+                      <option value="sarpras">Sarpras</option>
+                      <option value="non_sarpras">Non Sarpras</option>
+                    </select>
+                  </div>
+                  <div style={{ gridColumn: "1/-1" }}>
+                    <label
+                      style={{
+                        fontSize: 12,
+                        color: "#374151",
+                        display: "block",
+                        marginBottom: 4,
+                        fontWeight: 500,
+                      }}
+                    >
+                      Jenis Kegiatan<span style={{ color: "red" }}>*</span>
+                    </label>
+                    {jenisList.length > 0 ? (
+                      <select
+                        value={f.jenis_kegiatan}
+                        onChange={(e) => s("jenis_kegiatan", e.target.value)}
+                      >
+                        <option value="">— Pilih —</option>
+                        {jenisList.map(([v, l]) => (
+                          <option key={v} value={String(v)}>
+                            {v}. {l}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div
+                        style={{
+                          padding: "8px 10px",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: 8,
+                          fontSize: 12,
+                          color: "#9ca3af",
+                        }}
+                      >
+                        {f.kategori && f.jenis_kegiatan_utama
+                          ? "Tidak ada pilihan untuk kombinasi ini."
+                          : "Pilih Kategori dan Kegiatan terlebih dahulu."}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="sec-box">
+                <div className="sec-title">C. Pengadaan</div>
+                <div className="grid2">
+                  {sel("Sifat Pengadaan", "sifat", SIFAT, true)}
+                  {sel("Cara Pengadaan", "cara", CARA, true)}
+                  {fld("Anggaran APBDes (Rp)", "anggaran_apbdes", "number")}
+                </div>
+              </div>
+
+              <div className="sec-box">
+                <div className="sec-title">D. Rencana Kegiatan</div>
+                <div className="grid2">
+                  {fld("Anggaran Dana Desa (Rp)", "rencana_dd", "number", true)}
+                  {fld("Anggaran Swadaya (Rp)", "rencana_swadaya", "number")}
+                  {rbox("Total Anggaran (Rp)", fmtS(totR))}
+                  {fld("Jumlah Kegiatan", "rencana_jumlah", "number", true)}
+                  {rbox("Satuan Kegiatan", satuan)}
+                  {fld("Volume Kegiatan", "rencana_volume", "number", true)}
+                </div>
+              </div>
+
+              <div className="sec-box">
+                <div className="sec-title">E. Realisasi Kegiatan</div>
+                <div className="grid2">
+                  {fld("Realisasi Dana Desa (Rp)", "realisasi_dd", "number")}
+                  {fld("Realisasi Swadaya (Rp)", "realisasi_swadaya", "number")}
+                  {rbox("Total Realisasi (Rp)", fmtS(totRl))}
+                  {rbox("% Realisasi Anggaran", pctAng + "%", pctColor(pctAng))}
+                  {fld("Jumlah Realisasi", "realisasi_jumlah", "number")}
+                  {fld("Volume Realisasi", "realisasi_volume", "number")}
+                  <div>
+                    <label
+                      style={{
+                        fontSize: 12,
+                        color: "#374151",
+                        display: "block",
+                        marginBottom: 4,
+                        fontWeight: 500,
+                      }}
+                    >
+                      % Realisasi Fisik
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={f.realisasi_pct_fisik || 0}
+                      onChange={(e) =>
+                        s(
+                          "realisasi_pct_fisik",
+                          Math.min(
+                            100,
+                            Math.max(0, Number(e.target.value) || 0),
+                          ),
+                        )
+                      }
+                    />
+                  </div>
+                  <div style={{ gridColumn: "1/-1" }}>
+                    <label
+                      style={{
+                        fontSize: 12,
+                        color: "#374151",
+                        display: "block",
+                        marginBottom: 4,
+                        fontWeight: 500,
+                      }}
+                    >
+                      Keterangan
+                    </label>
+                    <textarea
+                      value={f.realisasi_keterangan}
+                      onChange={(e) =>
+                        s("realisasi_keterangan", e.target.value)
+                      }
+                      rows={2}
+                      style={{ resize: "vertical" }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Alert ok={false} text={err} />
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={simpan}
+                  disabled={saving}
+                  className="btn-green"
+                  style={{
+                    flex: 1,
+                    padding: 12,
+                    fontSize: 14,
+                    opacity: saving ? 0.7 : 1,
+                  }}
+                >
+                  {saving ? "Menyimpan..." : "💾 Simpan Kegiatan"}
+                </button>
+                <button
+                  onClick={onClose}
+                  className="btn-outline"
+                  style={{ padding: "12px 20px", fontSize: 14 }}
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // ── DESA PAGE ──
+      function DesaPage({ desaId, desaNama, user, onGantiDesa, onLogout }) {
+        const username =
+          user?.user_metadata?.username || user?.email?.split("@")[0] || "";
+        const [tab, setTab] = useState("input");
+        const [kegiatan, setKegiatan] = useState([]);
+        const [loading, setLoading] = useState(true);
+        const [showForm, setShowForm] = useState(false);
+        const [editKeg, setEditKeg] = useState(null);
+        const [msg, setMsg] = useState(null);
+        const [desaInfo, setDesaInfo] = useState(null);
+        const [search, setSearch] = useState("");
+
+        useEffect(() => {
+          loadAll();
+        }, [desaId]);
+
+        const loadAll = async () => {
+          setLoading(true);
+          const [{ data: d }, { data: k }] = await Promise.all([
+            sb.from("desa").select("*").eq("id", desaId).single(),
+            sb
+              .from("kegiatan")
+              .select("*")
+              .eq("desa_id", desaId)
+              .order("created_at"),
+          ]);
+          setDesaInfo(d);
+          setKegiatan(k || []);
+          setLoading(false);
+        };
+
+        const totA = kegiatan.reduce((s, kg) => s + (kg.rencana_dd || 0), 0);
+        const totR = kegiatan.reduce((s, kg) => s + (kg.realisasi_dd || 0), 0);
+        const filtered = kegiatan.filter(
+          (kg) =>
+            !search ||
+            kg.uraian_apbdes?.toLowerCase().includes(search.toLowerCase()),
+        );
+
+        const showMsg = (ok, t) => {
+          setMsg({ ok, t });
+          setTimeout(() => setMsg(null), 3000);
+        };
+
+        const hapus = async (id) => {
+          if (!confirm("Hapus kegiatan ini?")) return;
+          const { error } = await sb.from("kegiatan").delete().eq("id", id);
+          if (error) showMsg(false, error.message);
+          else {
+            showMsg(true, "Kegiatan dihapus");
+            loadAll();
+          }
+        };
+
+        const logout = async () => {
+          await sb.auth.signOut();
+          onLogout();
+        };
+
+        const downloadKegiatan = () => {
+          const rows = kegiatan.map((kg, i) => ({
+            No: i + 1,
+            "Sumber Dana": kg.sumber_dana || "",
+            "Kode Induk/Sub Kegiatan": kg.kode_induk || "",
+            "Kode Rekening": kg.kode_rekening || "",
+            "Uraian APBDes": kg.uraian_apbdes || "",
+            "Uraian Detail Kegiatan": kg.uraian_detail || "",
+            "Tagging SDGs": getLabelSdgs(kg.sdgs),
+            "Tagging Prioritas": getLabelPrioritas(kg.prioritas),
+            "Kategori Kegiatan": getLabelKategori(kg.kategori),
+            Kegiatan:
+              kg.jenis_kegiatan_utama === "sarpras" ? "Sarpras" : "Non Sarpras",
+            "Jenis Kegiatan": getLabelJenis(
+              kg.kategori,
+              kg.jenis_kegiatan_utama,
+              kg.jenis_kegiatan,
+            ),
+            "Sifat Pengadaan": getLabelSifat(kg.sifat),
+            "Cara Pengadaan": getLabelCara(kg.cara),
+            "Anggaran APBDes (Rp)": kg.anggaran_apbdes || 0,
+            "Anggaran Dana Desa (Rp)": kg.rencana_dd || 0,
+            "Anggaran Swadaya (Rp)": kg.rencana_swadaya || 0,
+            "Total Anggaran (Rp)":
+              (kg.rencana_dd || 0) + (kg.rencana_swadaya || 0),
+            "Jumlah Kegiatan": kg.rencana_jumlah || 0,
+            "Satuan Kegiatan": kg.rencana_satuan || "",
+            "Volume Kegiatan": kg.rencana_volume || 0,
+            "Realisasi Dana Desa (Rp)": kg.realisasi_dd || 0,
+            "Realisasi Swadaya (Rp)": kg.realisasi_swadaya || 0,
+            "Total Realisasi (Rp)":
+              (kg.realisasi_dd || 0) + (kg.realisasi_swadaya || 0),
+            "% Realisasi Anggaran":
+              calcPct(kg.realisasi_dd, kg.rencana_dd) + "%",
+            "Jumlah Realisasi": kg.realisasi_jumlah || 0,
+            "Volume Realisasi": kg.realisasi_volume || 0,
+            "% Realisasi Fisik": (kg.realisasi_pct_fisik || 0) + "%",
+            Keterangan: kg.realisasi_keterangan || "",
+          }));
+          downloadExcel(rows, "Data Kegiatan - Desa " + desaNama);
+        };
+
+        return (
+          <div style={{ minHeight: "100vh", background: "#f0fdf4" }}>
+            {showForm && (
+              <FormKegiatan
+                initial={editKeg}
+                desaId={desaId}
+                onSave={() => {
+                  setShowForm(false);
+                  setEditKeg(null);
+                  showMsg(true, "Kegiatan berhasil disimpan!");
+                  loadAll();
+                }}
+                onClose={() => {
+                  setShowForm(false);
+                  setEditKeg(null);
+                }}
+              />
+            )}
+            <div className="wrap">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "1rem",
+                  flexWrap: "wrap",
+                  gap: 8,
+                  paddingTop: "1rem",
+                }}
+              >
+                <div>
+                  <h1
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 700,
+                      color: "#166534",
+                      margin: 0,
+                    }}
+                  >
+                    🏡 Desa {desaNama}
+                  </h1>
+                  <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
+                    {desaInfo?.kecamatan && `${desaInfo.kecamatan} · `}
+                    {desaInfo?.kabupaten} · Pendamping: <b>{username}</b>
+                  </p>
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button
+                    onClick={downloadKegiatan}
+                    style={{
+                      fontSize: 13,
+                      padding: "7px 16px",
+                      borderRadius: 8,
+                      border: "1px solid #16a34a",
+                      background: "#f0fdf4",
+                      color: "#166534",
+                      fontWeight: 500,
+                    }}
+                  >
+                    ⬇ Download Data
+                  </button>
+                  <button
+                    onClick={onGantiDesa}
+                    className="btn-outline"
+                    style={{ fontSize: 13 }}
+                  >
+                    🔄 Ganti Desa
+                  </button>
+                  <button
+                    onClick={logout}
+                    className="btn-outline"
+                    style={{ fontSize: 13 }}
+                  >
+                    Keluar
+                  </button>
+                </div>
+              </div>
+
+              <div className="tab-bar">
+                {[
+                  ["input", "📝 Input Kegiatan"],
+                  ["preview", "📊 Pratinjau"],
+                ].map(([t, l]) => (
+                  <button
+                    key={t}
+                    onClick={() => setTab(t)}
+                    className={`tab-btn${tab === t ? " active" : ""}`}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+
+              {msg && <Alert ok={msg.ok} text={msg.t} />}
+
+              {tab === "input" && (
+                <>
+                  <button
+                    onClick={() => {
+                      setEditKeg(null);
+                      setShowForm(true);
+                    }}
+                    className="btn-green"
+                    style={{
+                      width: "100%",
+                      padding: 12,
+                      fontSize: 14,
+                      marginBottom: "1rem",
+                    }}
+                  >
+                    + Tambah Kegiatan
+                  </button>
+                  <div className="card">
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 12,
+                        flexWrap: "wrap",
+                        gap: 8,
+                      }}
+                    >
+                      <div className="sec-title" style={{ marginBottom: 0 }}>
+                        Daftar Kegiatan ({kegiatan.length})
+                      </div>
+                      <input
+                        placeholder="🔍 Cari uraian..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        style={{ width: 180, fontSize: 12 }}
+                      />
+                    </div>
+                    {loading ? (
+                      <div
+                        style={{
+                          textAlign: "center",
+                          padding: "2rem",
+                          color: "#6b7280",
+                        }}
+                      >
+                        Memuat...
+                      </div>
+                    ) : filtered.length === 0 ? (
+                      <div
+                        style={{
+                          textAlign: "center",
+                          padding: "2rem",
+                          color: "#9ca3af",
+                          border: "2px dashed #e5e7eb",
+                          borderRadius: 8,
+                        }}
+                      >
+                        Belum ada kegiatan
+                      </div>
+                    ) : (
+                      <div style={{ overflowX: "auto" }}>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>No</th>
+                              <th>Sumber</th>
+                              <th>Uraian APBDes</th>
+                              <th>Kategori</th>
+                              <th>Jenis</th>
+                              <th>Ang.DD</th>
+                              <th>Real.DD</th>
+                              <th>%Ang</th>
+                              <th>%Fisik</th>
+                              <th>Aksi</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filtered.map((kg, i) => {
+                              const katLabel = KATEGORI.find(
+                                (c) => String(c[0]) === String(kg.kategori),
+                              );
+                              const jList =
+                                JENIS_MAP[
+                                  kg.kategori + "_" + kg.jenis_kegiatan_utama
+                                ] || [];
+                              const jLabel = jList.find(
+                                (j) =>
+                                  String(j[0]) === String(kg.jenis_kegiatan),
+                              );
+                              const pA = calcPct(
+                                kg.realisasi_dd,
+                                kg.rencana_dd,
+                              );
+                              const pF = kg.realisasi_pct_fisik ?? null;
+                              return (
+                                <tr key={kg.id}>
+                                  <td>{i + 1}</td>
+                                  <td>
+                                    <span
+                                      className="badge"
+                                      style={{
+                                        background: "#dbeafe",
+                                        color: "#1d4ed8",
+                                      }}
+                                    >
+                                      {kg.sumber_dana}
+                                    </span>
+                                  </td>
+                                  <td
+                                    style={{
+                                      maxWidth: 150,
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {kg.uraian_apbdes || "-"}
+                                  </td>
+                                  <td
+                                    style={{
+                                      whiteSpace: "nowrap",
+                                      fontSize: 11,
+                                    }}
+                                  >
+                                    {katLabel ? katLabel[1] : "-"}
+                                  </td>
+                                  <td
+                                    style={{
+                                      maxWidth: 120,
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                      fontSize: 11,
+                                    }}
+                                  >
+                                    {jLabel ? jLabel[1] : "-"}
+                                  </td>
+                                  <td>{fmtS(kg.rencana_dd || 0)}</td>
+                                  <td>{fmtS(kg.realisasi_dd || 0)}</td>
+                                  <td>
+                                    <span
+                                      style={{
+                                        fontWeight: 700,
+                                        color: pctColor(pA),
+                                      }}
+                                    >
+                                      {pA}%
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <span
+                                      style={{
+                                        fontWeight: 700,
+                                        color:
+                                          pF === null
+                                            ? "#9ca3af"
+                                            : pctColor(pF),
+                                      }}
+                                    >
+                                      {pF === null ? "—" : pF + "%"}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <div style={{ display: "flex", gap: 4 }}>
+                                      <button
+                                        onClick={() => {
+                                          setEditKeg(kg);
+                                          setShowForm(true);
+                                        }}
+                                        style={{
+                                          fontSize: 11,
+                                          padding: "4px 8px",
+                                          border: "1px solid #3b82f6",
+                                          color: "#3b82f6",
+                                          background: "white",
+                                          borderRadius: 6,
+                                        }}
+                                      >
+                                        ✏️
+                                      </button>
+                                      <button
+                                        onClick={() => hapus(kg.id)}
+                                        style={{
+                                          fontSize: 11,
+                                          padding: "4px 8px",
+                                          border: "1px solid #ef4444",
+                                          color: "#ef4444",
+                                          background: "white",
+                                          borderRadius: 6,
+                                        }}
+                                      >
+                                        🗑
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {tab === "preview" && (
+                <>
+                  <div className="grid3">
+                    {[
+                      ["Total Anggaran DD", fmtS(totA), "#166534"],
+                      ["Total Realisasi DD", fmtS(totR), "#166534"],
+                      ["Sisa Anggaran", fmtS(totA - totR), "#92400e"],
+                      ["Jml Kegiatan", kegiatan.length, "#1d4ed8"],
+                    ].map(([l, v, c]) => (
+                      <div key={l} className="metric">
+                        <div className="metric-label">{l}</div>
+                        <div className="metric-value" style={{ color: c }}>
+                          {v}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="card">
+                    <div className="sec-title">Ringkasan Kegiatan</div>
+                    {kegiatan.length === 0 ? (
+                      <div
+                        style={{
+                          textAlign: "center",
+                          color: "#9ca3af",
+                          padding: "1rem",
+                        }}
+                      >
+                        Belum ada kegiatan
+                      </div>
+                    ) : (
+                      kegiatan.map((kg, i) => {
+                        const katLabel = KATEGORI.find(
+                          (c) => String(c[0]) === String(kg.kategori),
+                        );
+                        const jList =
+                          JENIS_MAP[
+                            kg.kategori + "_" + kg.jenis_kegiatan_utama
+                          ] || [];
+                        const jLabel = jList.find(
+                          (j) => String(j[0]) === String(kg.jenis_kegiatan),
+                        );
+                        const pA = calcPct(kg.realisasi_dd, kg.rencana_dd);
+                        const pF = kg.realisasi_pct_fisik ?? null;
+                        return (
+                          <div
+                            key={kg.id}
+                            style={{
+                              marginBottom: 12,
+                              padding: 12,
+                              border: "1px solid #e5e7eb",
+                              borderRadius: 10,
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                flexWrap: "wrap",
+                                gap: 8,
+                                marginBottom: 6,
+                              }}
+                            >
+                              <div style={{ fontWeight: 600, fontSize: 13 }}>
+                                {i + 1}. {kg.uraian_apbdes || "(tanpa uraian)"}
+                              </div>
+                              <span
+                                className="badge"
+                                style={{
+                                  background: "#dbeafe",
+                                  color: "#1d4ed8",
+                                }}
+                              >
+                                {kg.sumber_dana}
+                              </span>
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                color: "#6b7280",
+                                marginBottom: 8,
+                              }}
+                            >
+                              {katLabel ? katLabel[1] : ""}
+                              {jLabel ? " › " + jLabel[1] : ""}
+                            </div>
+                            <div
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns: "1fr 1fr",
+                                gap: 6,
+                                fontSize: 12,
+                                marginBottom: 8,
+                              }}
+                            >
+                              <div>
+                                Anggaran DD: <b>{fmtS(kg.rencana_dd || 0)}</b>
+                              </div>
+                              <div>
+                                Realisasi DD:{" "}
+                                <b>{fmtS(kg.realisasi_dd || 0)}</b>
+                              </div>
+                              <div>
+                                Vol. Rencana:{" "}
+                                <b>
+                                  {kg.rencana_volume || 0} {kg.rencana_satuan}
+                                </b>
+                              </div>
+                              <div>
+                                Vol. Realisasi:{" "}
+                                <b>
+                                  {kg.realisasi_volume || 0} {kg.rencana_satuan}
+                                </b>
+                              </div>
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: 12,
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              <div style={{ flex: 1, minWidth: 120 }}>
+                                <div
+                                  style={{
+                                    fontSize: 11,
+                                    color: "#6b7280",
+                                    marginBottom: 2,
+                                  }}
+                                >
+                                  % Anggaran
+                                </div>
+                                <Bar p={pA} />
+                              </div>
+                              {pF !== null && (
+                                <div style={{ flex: 1, minWidth: 120 }}>
+                                  <div
+                                    style={{
+                                      fontSize: 11,
+                                      color: "#6b7280",
+                                      marginBottom: 2,
+                                    }}
+                                  >
+                                    % Fisik
+                                  </div>
+                                  <Bar p={pF} />
+                                </div>
+                              )}
+                            </div>
+                            {kg.realisasi_keterangan && (
+                              <div
+                                style={{
+                                  fontSize: 11,
+                                  color: "#6b7280",
+                                  marginTop: 6,
+                                  fontStyle: "italic",
+                                }}
+                              >
+                                📝 {kg.realisasi_keterangan}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      // ── PUBLIK PAGE ──
+      function PublikPage({ onBack }) {
+        const [desas, setDesas] = useState([]);
+        const [kegiatan, setKegiatan] = useState([]);
+        const [loading, setLoading] = useState(true);
+        const [search, setSearch] = useState("");
+
+        useEffect(() => {
+          (async () => {
+            const [{ data: d }, { data: k }] = await Promise.all([
+              sb.from("desa").select("*").order("nama"),
+              sb.from("kegiatan").select("*"),
+            ]);
+            setDesas(d || []);
+            setKegiatan(k || []);
+            setLoading(false);
+          })();
+        }, []);
+
+        const totA = kegiatan.reduce((s, kg) => s + (kg.rencana_dd || 0), 0);
+        const totR = kegiatan.reduce((s, kg) => s + (kg.realisasi_dd || 0), 0);
+        const filtered = desas.filter(
+          (d) => !search || d.nama.toLowerCase().includes(search.toLowerCase()),
+        );
+
+        const desaStat = (id) => {
+          const kgs = kegiatan.filter((k) => k.desa_id === id);
+          return {
+            totA: kgs.reduce((s, k) => s + (k.rencana_dd || 0), 0),
+            totR: kgs.reduce((s, k) => s + (k.realisasi_dd || 0), 0),
+            jml: kgs.length,
+          };
+        };
+
+        return (
+          <div style={{ minHeight: "100vh", background: "#f0fdf4" }}>
+            <div className="wrap">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "1rem",
+                  flexWrap: "wrap",
+                  gap: 8,
+                  paddingTop: "1rem",
+                }}
+              >
+                <div>
+                  <h1
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 700,
+                      color: "#166534",
+                      margin: 0,
+                    }}
+                  >
+                    📊 Dashboard Publik Dana Desa
+                  </h1>
+                  <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
+                    Transparansi penggunaan anggaran desa
+                  </p>
+                </div>
+                <button
+                  onClick={onBack}
+                  className="btn-outline"
+                  style={{ fontSize: 13 }}
+                >
+                  ← Login
+                </button>
+              </div>
+
+              <div className="grid3">
+                {[
+                  ["Total Desa", desas.length, "#166534"],
+                  ["Total Anggaran DD", fmtS(totA), "#166534"],
+                  ["Total Realisasi DD", fmtS(totR), "#166534"],
+                  [
+                    "Rata-rata Serapan",
+                    calcPct(totR, totA) + "%",
+                    pctColor(calcPct(totR, totA)),
+                  ],
+                ].map(([l, v, c]) => (
+                  <div key={l} className="metric">
+                    <div className="metric-label">{l}</div>
+                    <div className="metric-value" style={{ color: c }}>
+                      {v}
+                    </div>
                   </div>
                 ))}
-                <div style={{gridColumn:'1/-1'}}>
-                  <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4}}>Total Anggaran (Rp)</label>
-                  <input type="number" value={editDesa.anggaran||0} onChange={e=>setEditDesa({...editDesa,anggaran:Number(e.target.value)})}/>
-                </div>
               </div>
-              <div style={{display:'flex',gap:8}}>
-                <button onClick={simpanEditDesa} className="btn-green" style={{flex:1,padding:10,fontSize:14}}>💾 Simpan</button>
-                <button onClick={()=>setEditDesa(null)} className="btn-outline" style={{padding:'10px 20px',fontSize:14}}>Batal</button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
 
-// ── FORM KEGIATAN ──
-function FormKegiatan({initial, desaId, onSave, onClose}) {
-  const [f,setF] = useState(initial ? {...emptyKeg(),...initial} : emptyKeg())
-  const [err,setErr] = useState('')
-  const [saving,setSaving] = useState(false)
-
-  const s = (k,v) => setF(p=>({...p,[k]:v}))
-  const totR  = (f.rencana_dd||0)+(f.rencana_swadaya||0)
-  const totRl = (f.realisasi_dd||0)+(f.realisasi_swadaya||0)
-  const pctAng = calcPct(f.realisasi_dd, f.rencana_dd)
-  const pctFis = f.rencana_volume>0 ? calcPct(f.realisasi_volume, f.rencana_volume) : 0
-  const jenisList = f.kategori&&f.jenis_kegiatan_utama ? (JENIS_MAP[f.kategori+'_'+f.jenis_kegiatan_utama]||[]) : []
-  const satuan = f.jenis_kegiatan ? (SATUAN_MAP[Number(f.jenis_kegiatan)]||'') : ''
-
-  const simpan = async () => {
-    const missing = []
-    if (!f.sumber_dana)          missing.push('Sumber Dana')
-    if (!f.uraian_apbdes.trim()) missing.push('Uraian APBDes')
-    if (!f.uraian_detail.trim()) missing.push('Uraian Detail')
-    if (!f.sdgs)                 missing.push('Tagging SDGs')
-    if (!f.prioritas)            missing.push('Tagging Prioritas')
-    if (!f.kategori)             missing.push('Kategori Kegiatan')
-    if (!f.jenis_kegiatan_utama) missing.push('Kegiatan')
-    if (!f.jenis_kegiatan)       missing.push('Jenis Kegiatan')
-    if (!f.sifat)                missing.push('Sifat Pengadaan')
-    if (!f.cara)                 missing.push('Cara Pengadaan')
-    if (!f.rencana_dd)           missing.push('Anggaran Dana Desa')
-    if (!f.rencana_jumlah)       missing.push('Jumlah Kegiatan')
-    if (!f.rencana_volume)       missing.push('Volume Kegiatan')
-    if (missing.length>0) { setErr('Wajib diisi: '+missing.join(', ')); return }
-    setSaving(true)
-    const payload = {...f, desa_id:desaId, rencana_satuan:satuan}
-    let error
-    if (f.id) {
-      ({error} = await sb.from('kegiatan').update(payload).eq('id',f.id))
-    } else {
-      ({error} = await sb.from('kegiatan').insert([payload]))
-    }
-    if (error) { setErr(error.message); setSaving(false); return }
-    onSave()
-    setSaving(false)
-  }
-
-  const fld = (label,key,type='text',req=false) => (
-    <div>
-      <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>{label}{req&&<span style={{color:'red'}}>*</span>}</label>
-      <input type={type} value={f[key]||''} onChange={e=>s(key, type==='number'?Number(e.target.value)||0:e.target.value)}/>
-    </div>
-  )
-
-  const sel = (label,key,opts,req=false,onChange) => (
-    <div>
-      <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>{label}{req&&<span style={{color:'red'}}>*</span>}</label>
-      <select value={f[key]||''} onChange={e=>{s(key,e.target.value); onChange&&onChange(e.target.value)}}>
-        <option value="">— Pilih —</option>
-        {opts.map(([v,l]) => <option key={v} value={String(v)}>{v}. {l}</option>)}
-      </select>
-    </div>
-  )
-
-  const rbox = (label,val,color='#1d4ed8') => (
-    <div>
-      <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>{label}</label>
-      <div className="read-box" style={{color}}>{val||'—'}</div>
-    </div>
-  )
-
-  return (
-    <div className="modal-bg">
-      <div className="modal">
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem'}}>
-          <div style={{fontSize:15,fontWeight:700,color:'#166534'}}>{f.id?'✏️ Edit Kegiatan':'➕ Tambah Kegiatan'}</div>
-          <button onClick={onClose} style={{border:'none',background:'none',fontSize:20}}>✕</button>
-        </div>
-
-        <div className="sec-box">
-          <div className="sec-title">A. Identifikasi Kegiatan</div>
-          <div className="grid2" style={{marginBottom:10}}>
-            <div>
-              <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>Sumber Dana<span style={{color:'red'}}>*</span></label>
-              <select value={f.sumber_dana} onChange={e=>s('sumber_dana',e.target.value)}>
-                <option value="DDS">DDS</option>
-                <option value="SDD">SDD</option>
-              </select>
-            </div>
-            {fld('Kode Induk/Sub Kegiatan','kode_induk')}
-            {fld('Kode Rekening','kode_rekening')}
-          </div>
-          {fld('Uraian APBDes','uraian_apbdes','text',true)}
-          <div style={{marginTop:10}}>
-            <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>Uraian Detail Kegiatan<span style={{color:'red'}}>*</span></label>
-            <textarea value={f.uraian_detail} onChange={e=>s('uraian_detail',e.target.value)} rows={2} style={{resize:'vertical'}}/>
-          </div>
-        </div>
-
-        <div className="sec-box">
-          <div className="sec-title">B. Klasifikasi & Tagging</div>
-          <div className="grid2">
-            {sel('Tagging SDGs','sdgs',SDGS,true)}
-            {sel('Tagging Prioritas','prioritas',PRIORITAS,true)}
-            {sel('Kategori Kegiatan','kategori',KATEGORI,true,()=>{s('jenis_kegiatan_utama','');s('jenis_kegiatan','')})}
-            <div>
-              <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>Kegiatan<span style={{color:'red'}}>*</span></label>
-              <select value={f.jenis_kegiatan_utama} onChange={e=>{s('jenis_kegiatan_utama',e.target.value);s('jenis_kegiatan','')}}>
-                <option value="">— Pilih —</option>
-                <option value="sarpras">Sarpras</option>
-                <option value="non_sarpras">Non Sarpras</option>
-              </select>
-            </div>
-            <div style={{gridColumn:'1/-1'}}>
-              <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>Jenis Kegiatan<span style={{color:'red'}}>*</span></label>
-              {jenisList.length>0
-                ? <select value={f.jenis_kegiatan} onChange={e=>s('jenis_kegiatan',e.target.value)}>
-                    <option value="">— Pilih —</option>
-                    {jenisList.map(([v,l]) => <option key={v} value={String(v)}>{v}. {l}</option>)}
-                  </select>
-                : <div style={{padding:'8px 10px',border:'1px solid #e5e7eb',borderRadius:8,fontSize:12,color:'#9ca3af'}}>
-                    {f.kategori&&f.jenis_kegiatan_utama ? 'Tidak ada pilihan untuk kombinasi ini.' : 'Pilih Kategori dan Kegiatan terlebih dahulu.'}
+              <div className="card">
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 12,
+                    flexWrap: "wrap",
+                    gap: 8,
+                  }}
+                >
+                  <div className="sec-title" style={{ marginBottom: 0 }}>
+                    Rekap per Desa
                   </div>
-              }
-            </div>
-          </div>
-        </div>
-
-        <div className="sec-box">
-          <div className="sec-title">C. Pengadaan</div>
-          <div className="grid2">
-            {sel('Sifat Pengadaan','sifat',SIFAT,true)}
-            {sel('Cara Pengadaan','cara',CARA,true)}
-            {fld('Anggaran APBDes (Rp)','anggaran_apbdes','number')}
-          </div>
-        </div>
-
-        <div className="sec-box">
-          <div className="sec-title">D. Rencana Kegiatan</div>
-          <div className="grid2">
-            {fld('Anggaran Dana Desa (Rp)','rencana_dd','number',true)}
-            {fld('Anggaran Swadaya (Rp)','rencana_swadaya','number')}
-            {rbox('Total Anggaran (Rp)',fmtS(totR))}
-            {fld('Jumlah Kegiatan','rencana_jumlah','number',true)}
-            {rbox('Satuan Kegiatan',satuan)}
-            {fld('Volume Kegiatan','rencana_volume','number',true)}
-          </div>
-        </div>
-
-        <div className="sec-box">
-          <div className="sec-title">E. Realisasi Kegiatan</div>
-          <div className="grid2">
-            {fld('Realisasi Dana Desa (Rp)','realisasi_dd','number')}
-            {fld('Realisasi Swadaya (Rp)','realisasi_swadaya','number')}
-            {rbox('Total Realisasi (Rp)',fmtS(totRl))}
-            {rbox('% Realisasi Anggaran',pctAng+'%',pctColor(pctAng))}
-            {fld('Jumlah Realisasi','realisasi_jumlah','number')}
-            {fld('Volume Realisasi','realisasi_volume','number')}
-            <div>
-              <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>% Realisasi Fisik</label>
-              <input type="number" min={0} max={100} value={f.realisasi_pct_fisik||0} onChange={e=>s('realisasi_pct_fisik',Math.min(100,Math.max(0,Number(e.target.value)||0)))}/>
-            </div>
-            <div style={{gridColumn:'1/-1'}}>
-              <label style={{fontSize:12,color:'#374151',display:'block',marginBottom:4,fontWeight:500}}>Keterangan</label>
-              <textarea value={f.realisasi_keterangan} onChange={e=>s('realisasi_keterangan',e.target.value)} rows={2} style={{resize:'vertical'}}/>
-            </div>
-          </div>
-        </div>
-
-        <Alert ok={false} text={err}/>
-        <div style={{display:'flex',gap:8}}>
-          <button onClick={simpan} disabled={saving} className="btn-green" style={{flex:1,padding:12,fontSize:14,opacity:saving?0.7:1}}>
-            {saving?'Menyimpan...':'💾 Simpan Kegiatan'}
-          </button>
-          <button onClick={onClose} className="btn-outline" style={{padding:'12px 20px',fontSize:14}}>Batal</button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ── DESA PAGE ──
-function DesaPage({desaId, desaNama, user, onGantiDesa, onLogout}) {
-  const username = user?.user_metadata?.username || user?.email?.split('@')[0] || ''
-  const [tab,setTab] = useState('input')
-  const [kegiatan,setKegiatan] = useState([])
-  const [loading,setLoading] = useState(true)
-  const [showForm,setShowForm] = useState(false)
-  const [editKeg,setEditKeg] = useState(null)
-  const [msg,setMsg] = useState(null)
-  const [desaInfo,setDesaInfo] = useState(null)
-  const [search,setSearch] = useState('')
-
-  useEffect(() => { loadAll() }, [desaId])
-
-  const loadAll = async () => {
-    setLoading(true)
-    const [{data:d},{data:k}] = await Promise.all([
-      sb.from('desa').select('*').eq('id',desaId).single(),
-      sb.from('kegiatan').select('*').eq('desa_id',desaId).order('created_at')
-    ])
-    setDesaInfo(d)
-    setKegiatan(k||[])
-    setLoading(false)
-  }
-
-  const showMsg = (ok,t) => { setMsg({ok,t}); setTimeout(()=>setMsg(null),3000) }
-
-  const hapus = async (id) => {
-    if (!confirm('Hapus kegiatan ini?')) return
-    const {error} = await sb.from('kegiatan').delete().eq('id',id)
-    if (error) showMsg(false,error.message)
-    else { showMsg(true,'Kegiatan dihapus'); loadAll() }
-  }
-
-  const logout = async () => { await sb.auth.signOut(); onLogout() }
-
-  const totA = kegiatan.reduce((s,kg)=>s+(kg.rencana_dd||0),0)
-  const totR = kegiatan.reduce((s,kg)=>s+(kg.realisasi_dd||0),0)
-  const filtered = kegiatan.filter(kg=>!search||kg.uraian_apbdes?.toLowerCase().includes(search.toLowerCase()))
-
-  return (
-    <div style={{minHeight:'100vh',background:'#f0fdf4'}}>
-      {showForm && (
-        <FormKegiatan
-          initial={editKeg}
-          desaId={desaId}
-          onSave={()=>{ setShowForm(false); setEditKeg(null); showMsg(true,'Kegiatan berhasil disimpan!'); loadAll() }}
-          onClose={()=>{ setShowForm(false); setEditKeg(null) }}
-        />
-      )}
-      <div className="wrap">
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem',flexWrap:'wrap',gap:8,paddingTop:'1rem'}}>
-          <div>
-            <h1 style={{fontSize:18,fontWeight:700,color:'#166534',margin:0}}>🏡 Desa {desaNama}</h1>
-            <p style={{fontSize:12,color:'#6b7280',margin:0}}>
-              {desaInfo?.kecamatan&&`${desaInfo.kecamatan} · `}{desaInfo?.kabupaten} · Pendamping: <b>{username}</b>
-            </p>
-          </div>
-          <div style={{display:'flex',gap:8}}>
-            <button onClick={onGantiDesa} className="btn-outline" style={{fontSize:13}}>🔄 Ganti Desa</button>
-            <button onClick={logout} className="btn-outline" style={{fontSize:13}}>Keluar</button>
-          </div>
-        </div>
-
-        <div className="tab-bar">
-          {[['input','📝 Input Kegiatan'],['preview','📊 Pratinjau']].map(([t,l]) => (
-            <button key={t} onClick={()=>setTab(t)} className={`tab-btn${tab===t?' active':''}`}>{l}</button>
-          ))}
-        </div>
-
-        {msg && <Alert ok={msg.ok} text={msg.t}/>}
-
-        {tab==='input' && (
-          <>
-            <button onClick={()=>{ setEditKeg(null); setShowForm(true) }} className="btn-green" style={{width:'100%',padding:12,fontSize:14,marginBottom:'1rem'}}>
-              + Tambah Kegiatan
-            </button>
-            <div className="card">
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12,flexWrap:'wrap',gap:8}}>
-                <div className="sec-title" style={{marginBottom:0}}>Daftar Kegiatan ({kegiatan.length})</div>
-                <input placeholder="🔍 Cari uraian..." value={search} onChange={e=>setSearch(e.target.value)} style={{width:180,fontSize:12}}/>
-              </div>
-              {loading ? <div style={{textAlign:'center',padding:'2rem',color:'#6b7280'}}>Memuat...</div> :
-               filtered.length===0 ? <div style={{textAlign:'center',padding:'2rem',color:'#9ca3af',border:'2px dashed #e5e7eb',borderRadius:8}}>Belum ada kegiatan</div> : (
-                <div style={{overflowX:'auto'}}>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>No</th><th>Sumber</th><th>Uraian APBDes</th><th>Kategori</th>
-                        <th>Jenis</th><th>Ang.DD</th><th>Real.DD</th><th>%Ang</th><th>%Fisik</th><th>Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filtered.map((kg,i) => {
-                        const katLabel = KATEGORI.find(c=>String(c[0])===String(kg.kategori))
-                        const jList = JENIS_MAP[kg.kategori+'_'+kg.jenis_kegiatan_utama]||[]
-                        const jLabel = jList.find(j=>String(j[0])===String(kg.jenis_kegiatan))
-                        const pA = calcPct(kg.realisasi_dd,kg.rencana_dd)
-                        const pF = kg.realisasi_pct_fisik ?? null
-                        return (
-                          <tr key={kg.id}>
-                            <td>{i+1}</td>
-                            <td><span className="badge" style={{background:'#dbeafe',color:'#1d4ed8'}}>{kg.sumber_dana}</span></td>
-                            <td style={{maxWidth:150,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{kg.uraian_apbdes||'-'}</td>
-                            <td style={{whiteSpace:'nowrap',fontSize:11}}>{katLabel?katLabel[1]:'-'}</td>
-                            <td style={{maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontSize:11}}>{jLabel?jLabel[1]:'-'}</td>
-                            <td>{fmtS(kg.rencana_dd||0)}</td>
-                            <td>{fmtS(kg.realisasi_dd||0)}</td>
-                            <td><span style={{fontWeight:700,color:pctColor(pA)}}>{pA}%</span></td>
-                            <td><span style={{fontWeight:700,color:pF===null?'#9ca3af':pctColor(pF)}}>{pF===null?'—':pF+'%'}</span></td>
-                            <td>
-                              <div style={{display:'flex',gap:4}}>
-                                <button onClick={()=>{ setEditKeg(kg); setShowForm(true) }} style={{fontSize:11,padding:'4px 8px',border:'1px solid #3b82f6',color:'#3b82f6',background:'white',borderRadius:6}}>✏️</button>
-                                <button onClick={()=>hapus(kg.id)} style={{fontSize:11,padding:'4px 8px',border:'1px solid #ef4444',color:'#ef4444',background:'white',borderRadius:6}}>🗑</button>
-                              </div>
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
+                  <input
+                    placeholder="🔍 Cari desa..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    style={{ width: 180, fontSize: 12 }}
+                  />
                 </div>
-              )}
-            </div>
-          </>
-        )}
-
-        {tab==='preview' && (
-          <>
-            <div className="grid3">
-              {[['Total Anggaran DD',fmtS(totA),'#166534'],['Total Realisasi DD',fmtS(totR),'#166534'],['Sisa Anggaran',fmtS(totA-totR),'#92400e'],['Jml Kegiatan',kegiatan.length,'#1d4ed8']].map(([l,v,c]) => (
-                <div key={l} className="metric"><div className="metric-label">{l}</div><div className="metric-value" style={{color:c}}>{v}</div></div>
-              ))}
-            </div>
-            <div className="card">
-              <div className="sec-title">Ringkasan Kegiatan</div>
-              {kegiatan.length===0 ? <div style={{textAlign:'center',color:'#9ca3af',padding:'1rem'}}>Belum ada kegiatan</div> :
-               kegiatan.map((kg,i) => {
-                const katLabel = KATEGORI.find(c=>String(c[0])===String(kg.kategori))
-                const jList = JENIS_MAP[kg.kategori+'_'+kg.jenis_kegiatan_utama]||[]
-                const jLabel = jList.find(j=>String(j[0])===String(kg.jenis_kegiatan))
-                const pA = calcPct(kg.realisasi_dd,kg.rencana_dd)
-                const pF = kg.realisasi_pct_fisik ?? null
-                return (
-                  <div key={kg.id} style={{marginBottom:12,padding:12,border:'1px solid #e5e7eb',borderRadius:10}}>
-                    <div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8,marginBottom:6}}>
-                      <div style={{fontWeight:600,fontSize:13}}>{i+1}. {kg.uraian_apbdes||'(tanpa uraian)'}</div>
-                      <span className="badge" style={{background:'#dbeafe',color:'#1d4ed8'}}>{kg.sumber_dana}</span>
-                    </div>
-                    <div style={{fontSize:12,color:'#6b7280',marginBottom:8}}>{katLabel?katLabel[1]:''}{jLabel?' › '+jLabel[1]:''}</div>
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,fontSize:12,marginBottom:8}}>
-                      <div>Anggaran DD: <b>{fmtS(kg.rencana_dd||0)}</b></div>
-                      <div>Realisasi DD: <b>{fmtS(kg.realisasi_dd||0)}</b></div>
-                      <div>Vol. Rencana: <b>{kg.rencana_volume||0} {kg.rencana_satuan}</b></div>
-                      <div>Vol. Realisasi: <b>{kg.realisasi_volume||0} {kg.rencana_satuan}</b></div>
-                    </div>
-                    <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
-                      <div style={{flex:1,minWidth:120}}><div style={{fontSize:11,color:'#6b7280',marginBottom:2}}>% Anggaran</div><Bar p={pA}/></div>
-                      {pF!==null && <div style={{flex:1,minWidth:120}}><div style={{fontSize:11,color:'#6b7280',marginBottom:2}}>% Fisik</div><Bar p={pF}/></div>}
-                    </div>
-                    {kg.realisasi_keterangan && <div style={{fontSize:11,color:'#6b7280',marginTop:6,fontStyle:'italic'}}>📝 {kg.realisasi_keterangan}</div>}
+                {loading ? (
+                  <div
+                    style={{
+                      textAlign: "center",
+                      padding: "2rem",
+                      color: "#6b7280",
+                    }}
+                  >
+                    Memuat...
                   </div>
-                )
-              })}
+                ) : (
+                  <div style={{ overflowX: "auto" }}>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Desa</th>
+                          <th>Kecamatan</th>
+                          <th>Kabupaten</th>
+                          <th>Anggaran DD</th>
+                          <th>Realisasi DD</th>
+                          <th>Serapan</th>
+                          <th>Jml Kegiatan</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filtered.map((d) => {
+                          const st = desaStat(d.id);
+                          return (
+                            <tr key={d.id}>
+                              <td style={{ fontWeight: 600 }}>{d.nama}</td>
+                              <td style={{ color: "#6b7280", fontSize: 11 }}>
+                                {d.kecamatan || "-"}
+                              </td>
+                              <td style={{ color: "#6b7280", fontSize: 11 }}>
+                                {d.kabupaten || "-"}
+                              </td>
+                              <td>{fmtS(st.totA)}</td>
+                              <td>{fmtS(st.totR)}</td>
+                              <td style={{ minWidth: 120 }}>
+                                <Bar p={calcPct(st.totR, st.totA)} />
+                              </td>
+                              <td style={{ textAlign: "center" }}>{st.jml}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             </div>
-          </>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// ── PUBLIK PAGE ──
-function PublikPage({onBack}) {
-  const [desas,setDesas] = useState([])
-  const [kegiatan,setKegiatan] = useState([])
-  const [loading,setLoading] = useState(true)
-  const [search,setSearch] = useState('')
-
-  useEffect(() => {
-    (async () => {
-      const [{data:d},{data:k}] = await Promise.all([
-        sb.from('desa').select('*').order('nama'),
-        sb.from('kegiatan').select('*')
-      ])
-      setDesas(d||[]); setKegiatan(k||[]); setLoading(false)
-    })()
-  }, [])
-
-  const totA = kegiatan.reduce((s,kg)=>s+(kg.rencana_dd||0),0)
-  const totR = kegiatan.reduce((s,kg)=>s+(kg.realisasi_dd||0),0)
-  const filtered = desas.filter(d=>!search||d.nama.toLowerCase().includes(search.toLowerCase()))
-
-  const desaStat = (id) => {
-    const kgs = kegiatan.filter(k=>k.desa_id===id)
-    return {
-      totA: kgs.reduce((s,k)=>s+(k.rencana_dd||0),0),
-      totR: kgs.reduce((s,k)=>s+(k.realisasi_dd||0),0),
-      jml: kgs.length
-    }
-  }
-
-  return (
-    <div style={{minHeight:'100vh',background:'#f0fdf4'}}>
-      <div className="wrap">
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem',flexWrap:'wrap',gap:8,paddingTop:'1rem'}}>
-          <div>
-            <h1 style={{fontSize:18,fontWeight:700,color:'#166534',margin:0}}>📊 Dashboard Publik Dana Desa</h1>
-            <p style={{fontSize:12,color:'#6b7280',margin:0}}>Transparansi penggunaan anggaran desa</p>
           </div>
-          <button onClick={onBack} className="btn-outline" style={{fontSize:13}}>← Login</button>
-        </div>
+        );
+      }
 
-        <div className="grid3">
-          {[['Total Desa',desas.length,'#166534'],['Total Anggaran DD',fmtS(totA),'#166534'],['Total Realisasi DD',fmtS(totR),'#166534'],['Rata-rata Serapan',calcPct(totR,totA)+'%',pctColor(calcPct(totR,totA))]].map(([l,v,c]) => (
-            <div key={l} className="metric"><div className="metric-label">{l}</div><div className="metric-value" style={{color:c}}>{v}</div></div>
-          ))}
-        </div>
+      // ── APP UTAMA ──
+      function App() {
+        const [authUser, setAuthUser] = useState(undefined); // undefined=loading, null=tidak login, object=login
+        const [isPubik, setIsPublik] = useState(false);
+        const [desaId, setDesaId] = useState(null);
+        const [desaNama, setDesaNama] = useState(null);
 
-        <div className="card">
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12,flexWrap:'wrap',gap:8}}>
-            <div className="sec-title" style={{marginBottom:0}}>Rekap per Desa</div>
-            <input placeholder="🔍 Cari desa..." value={search} onChange={e=>setSearch(e.target.value)} style={{width:180,fontSize:12}}/>
-          </div>
-          {loading ? <div style={{textAlign:'center',padding:'2rem',color:'#6b7280'}}>Memuat...</div> : (
-            <div style={{overflowX:'auto'}}>
-              <table>
-                <thead><tr><th>Desa</th><th>Kecamatan</th><th>Kabupaten</th><th>Anggaran DD</th><th>Realisasi DD</th><th>Serapan</th><th>Jml Kegiatan</th></tr></thead>
-                <tbody>
-                  {filtered.map(d => {
-                    const st = desaStat(d.id)
-                    return (
-                      <tr key={d.id}>
-                        <td style={{fontWeight:600}}>{d.nama}</td>
-                        <td style={{color:'#6b7280',fontSize:11}}>{d.kecamatan||'-'}</td>
-                        <td style={{color:'#6b7280',fontSize:11}}>{d.kabupaten||'-'}</td>
-                        <td>{fmtS(st.totA)}</td>
-                        <td>{fmtS(st.totR)}</td>
-                        <td style={{minWidth:120}}><Bar p={calcPct(st.totR,st.totA)}/></td>
-                        <td style={{textAlign:'center'}}>{st.jml}</td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
+        useEffect(() => {
+          sb.auth
+            .getSession()
+            .then(({ data: { session }, error }) => {
+              setAuthUser(session?.user || null);
+            })
+            .catch(() => {
+              setAuthUser(null);
+            });
+          const {
+            data: { subscription },
+          } = sb.auth.onAuthStateChange((_, session) => {
+            setAuthUser(session?.user || null);
+            if (!session) {
+              setDesaId(null);
+              setDesaNama(null);
+              setIsPublik(false);
+            }
+          });
+          return () => subscription.unsubscribe();
+        }, []);
 
-// ── APP UTAMA ──
-function App() {
-  const [user,setUser] = useState(undefined)
-  const [desaId,setDesaId] = useState(null)
-  const [desaNama,setDesaNama] = useState(null)
+        const handleLogout = async () => {
+          await sb.auth.signOut();
+          setAuthUser(null);
+          setDesaId(null);
+          setDesaNama(null);
+          setIsPublik(false);
+        };
 
-  useEffect(() => {
-    sb.auth.getSession().then(({data:{session}}) => {
-      setUser(session?.user || null)
-    })
-    const {data:{subscription}} = sb.auth.onAuthStateChange((_,session) => {
-      setUser(session?.user || null)
-      if (!session) { setDesaId(null); setDesaNama(null) }
-    })
-    return () => subscription.unsubscribe()
-  }, [])
+        // Masih loading session
+        if (authUser === undefined) return <Loading />;
 
-  const handleLogout = async () => {
-    await sb.auth.signOut()
-    setUser(null); setDesaId(null); setDesaNama(null)
-  }
+        // Mode publik (tanpa login)
+        if (isPubik) return <PublikPage onBack={() => setIsPublik(false)} />;
 
-  if (user === undefined) return <Loading/>
-  if (user === null) return <LoginPage onLogin={u => { if(u==='publik') setUser('publik'); else setUser(u) }}/>
-  if (user === 'publik') return <PublikPage onBack={()=>setUser(null)}/>
-  if (isAdmin(user)) return <AdminPage onLogout={handleLogout}/>
-  if (!desaId) return <PilihDesaPage user={user} onPilihDesa={(id,nama)=>{ setDesaId(id); setDesaNama(nama) }} onLogout={handleLogout}/>
-  return <DesaPage desaId={desaId} desaNama={desaNama} user={user} onGantiDesa={()=>{ setDesaId(null); setDesaNama(null) }} onLogout={handleLogout}/>
-}
+        // Belum login
+        if (!authUser)
+          return (
+            <LoginPage
+              onLogin={(u) => {
+                if (u === "publik") {
+                  setIsPublik(true);
+                  return;
+                }
+                setAuthUser(u);
+              }}
+            />
+          );
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>)
-</script>
-</body>
+        // Login sebagai admin
+        if (isAdmin(authUser)) return <AdminPage onLogout={handleLogout} />;
+
+        // Login sebagai pendamping, belum pilih desa
+        if (!desaId)
+          return (
+            <PilihDesaPage
+              user={authUser}
+              onPilihDesa={(id, nama) => {
+                setDesaId(id);
+                setDesaNama(nama);
+              }}
+              onLogout={handleLogout}
+            />
+          );
+
+        // Login sebagai pendamping, sudah pilih desa
+        return (
+          <DesaPage
+            desaId={desaId}
+            desaNama={desaNama}
+            user={authUser}
+            onGantiDesa={() => {
+              setDesaId(null);
+              setDesaNama(null);
+            }}
+            onLogout={handleLogout}
+          />
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
 </html>
