@@ -1129,7 +1129,18 @@
             loadDesa();
           }
         };
-
+        const downloadDesa = () => {
+          const rows = [...desas]
+            .sort((a, b) => a.kode_desa.localeCompare(b.kode_desa))
+            .map((d) => ({
+              "Kode Desa": d.kode_desa,
+              "Nama Desa": d.nama,
+              Kecamatan: d.kecamatan || "",
+              "Kabupaten/Kota": d.kabupaten || "",
+              "Total Anggaran (Rp)": d.anggaran || 0,
+            }));
+          downloadExcel(rows, "Data Desa");
+        };
         const logout = async () => {
           await sb.auth.signOut();
           onLogout();
