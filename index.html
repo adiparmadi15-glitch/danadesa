@@ -8,6 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
       * {
         box-sizing: border-box;
@@ -232,8 +233,6 @@
         }
       }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   </head>
   <body>
     <script>
@@ -715,6 +714,7 @@
         const [password, setPassword] = useState("");
         const [err, setErr] = useState("");
         const [loading, setLoading] = useState(false);
+        const [showPass, setShowPass] = useState(false);
 
         const login = async () => {
           setErr("");
@@ -886,13 +886,35 @@
                 >
                   Password
                 </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && login()}
-                  placeholder="Masukkan password"
-                />
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showPass ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && login()}
+                    placeholder="Masukkan password"
+                    style={{ paddingRight: 40 }}
+                  />
+                  <button
+                    onClick={() => setShowPass((p) => !p)}
+                    tabIndex={-1}
+                    style={{
+                      position: "absolute",
+                      right: 10,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      cursor: "pointer",
+                      fontSize: 16,
+                      color: "#6b7280",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {showPass ? "🙈" : "👁️"}
+                  </button>
+                </div>
               </div>
               <Alert ok={false} text={err} />
               <button
@@ -928,6 +950,7 @@
       }
 
       // ── PILIH DESA ──
+      // This component is ONLY for choosing a desa. Nothing else.
       function PilihDesaPage({ user, onPilihDesa, onLogout }) {
         const username =
           user?.user_metadata?.username || user?.email?.split("@")[0] || "";
@@ -1079,15 +1102,17 @@
             showMsg(false, "Kode desa sudah dipakai");
             return;
           }
-          const { error } = await sb.from("desa").insert([
-            {
-              nama: dNama,
-              kode_desa: dKode,
-              kecamatan: dKec,
-              kabupaten: dKab,
-              anggaran: Number(dAng) || 0,
-            },
-          ]);
+          const { error } = await sb
+            .from("desa")
+            .insert([
+              {
+                nama: dNama,
+                kode_desa: dKode,
+                kecamatan: dKec,
+                kabupaten: dKab,
+                anggaran: Number(dAng) || 0,
+              },
+            ]);
           if (error) {
             showMsg(false, error.message);
             return;
@@ -1129,6 +1154,7 @@
             loadDesa();
           }
         };
+
         const downloadDesa = () => {
           const rows = [...desas]
             .sort((a, b) => a.kode_desa.localeCompare(b.kode_desa))
@@ -1141,6 +1167,7 @@
             }));
           downloadExcel(rows, "Data Desa");
         };
+
         const logout = async () => {
           await sb.auth.signOut();
           onLogout();
@@ -1490,7 +1517,7 @@
                                 <td>{fmtS(d.anggaran || 0)}</td>
                               </tr>
                             ))}
-                        </tbody>{" "}
+                        </tbody>
                       </table>
                     </div>
                   </div>
@@ -1607,10 +1634,6 @@
         const totR = (f.rencana_dd || 0) + (f.rencana_swadaya || 0);
         const totRl = (f.realisasi_dd || 0) + (f.realisasi_swadaya || 0);
         const pctAng = calcPct(f.realisasi_dd, f.rencana_dd);
-        const pctFis =
-          f.rencana_volume > 0
-            ? calcPct(f.realisasi_volume, f.rencana_volume)
-            : 0;
         const jenisList =
           f.kategori && f.jenis_kegiatan_utama
             ? JENIS_MAP[f.kategori + "_" + f.jenis_kegiatan_utama] || []
@@ -2028,14 +2051,6 @@
           setLoading(false);
         };
 
-        const totA = kegiatan.reduce((s, kg) => s + (kg.rencana_dd || 0), 0);
-        const totR = kegiatan.reduce((s, kg) => s + (kg.realisasi_dd || 0), 0);
-        const filtered = kegiatan.filter(
-          (kg) =>
-            !search ||
-            kg.uraian_apbdes?.toLowerCase().includes(search.toLowerCase()),
-        );
-
         const showMsg = (ok, t) => {
           setMsg({ ok, t });
           setTimeout(() => setMsg(null), 3000);
@@ -2097,6 +2112,14 @@
           }));
           downloadExcel(rows, "Data Kegiatan - Desa " + desaNama);
         };
+
+        const totA = kegiatan.reduce((s, kg) => s + (kg.rencana_dd || 0), 0);
+        const totR = kegiatan.reduce((s, kg) => s + (kg.realisasi_dd || 0), 0);
+        const filtered = kegiatan.filter(
+          (kg) =>
+            !search ||
+            kg.uraian_apbdes?.toLowerCase().includes(search.toLowerCase()),
+        );
 
         return (
           <div style={{ minHeight: "100vh", background: "#f0fdf4" }}>
@@ -2742,7 +2765,7 @@
 
       // ── APP UTAMA ──
       function App() {
-        const [authUser, setAuthUser] = useState(undefined); // undefined=loading, null=tidak login, object=login
+        const [authUser, setAuthUser] = useState(undefined);
         const [isPubik, setIsPublik] = useState(false);
         const [desaId, setDesaId] = useState(null);
         const [desaNama, setDesaNama] = useState(null);
@@ -2777,13 +2800,8 @@
           setIsPublik(false);
         };
 
-        // Masih loading session
         if (authUser === undefined) return <Loading />;
-
-        // Mode publik (tanpa login)
         if (isPubik) return <PublikPage onBack={() => setIsPublik(false)} />;
-
-        // Belum login
         if (!authUser)
           return (
             <LoginPage
@@ -2796,11 +2814,7 @@
               }}
             />
           );
-
-        // Login sebagai admin
         if (isAdmin(authUser)) return <AdminPage onLogout={handleLogout} />;
-
-        // Login sebagai pendamping, belum pilih desa
         if (!desaId)
           return (
             <PilihDesaPage
@@ -2812,8 +2826,6 @@
               onLogout={handleLogout}
             />
           );
-
-        // Login sebagai pendamping, sudah pilih desa
         return (
           <DesaPage
             desaId={desaId}
